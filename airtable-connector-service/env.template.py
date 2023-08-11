@@ -1,2 +1,0 @@
-API_KEY = "keyFILLME"
-BASE_ID = "appFILLME"
