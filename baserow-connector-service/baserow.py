@@ -35,8 +35,13 @@ class BaserowClient:
         response = requests.get(url, headers=self.headers)
         return self.handle_response(response)
 
-    def get_table_rows(self, table_id):
+    def get_table_rows(self, table_id, parameters=None):
         url = self.get_table_url(table_id)
+        if parameters:
+            if "?" in url:
+                url += "&" + "&".join(parameters)
+            else:
+                url += "?" + "&".join(parameters)
         response = requests.get(url, headers=self.headers)
         return self.handle_response(response)
 
