@@ -24,16 +24,17 @@ TABLES_MAP = {
 client = BaserowClient()
 
 
-@routes.post("/studenti")
+@routes.post("/students")
 async def add_student(request):
     data = await request.json()
     response = client.create_row(
         "186615",
         {
-            "JMBAG": data.get("_jmbag"),
-            "Ime": data.get("ime"),
-            "Prezime": data.get("prezime"),
-            "Godina studija": data.get("godina_studija"),
+            "JMBAG": data.get("jmbag"),
+            "Ime": data.get("name"),
+            "Prezime": data.get("surname"),
+            "Email": data.get("email"),
+            "Godina studija": data.get("year_of_study"),
         },
     )
     return web.Response(text=json.dumps(response), content_type="application/json")
