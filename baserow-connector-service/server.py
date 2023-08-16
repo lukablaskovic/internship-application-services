@@ -25,10 +25,10 @@ client = BaserowClient()
 
 
 @routes.post("/students")
-async def add_student(request):
-    data = await request.json()
-    response = client.create_row(
-        "186615",
+async def add_student(req):
+    data = await req.json()
+    res = client.create_row(
+        TABLES_MAP["studenti"],
         {
             "JMBAG": data.get("jmbag"),
             "Ime": data.get("name"),
@@ -37,7 +37,34 @@ async def add_student(request):
             "Godina studija": data.get("year_of_study"),
         },
     )
-    return web.Response(text=json.dumps(response), content_type="application/json")
+    return web.Response(text=json.dumps(res), content_type="application/json")
+
+
+@routes.post("/prijava-zadatka")
+async def prijava_novog_zadatka(req):
+    data = await req.json()
+    res = client.create_row(
+        TABLES_MAP["zadaci-za-odabir"],
+        {
+            "ID Zadatka": data.get("id_zadatka"),
+            "Poduzeće": data.get("poduzece"),
+            "Kontakt email": data.get("kontakt_email"),
+            "Zadatak studenta": data.get("zadatak_studenta"),
+            "Preferirane tehnologije": data.get("preferirane_tehnologije"),
+            "Potrebno imati": data.get("potrebno_imati"),
+            "Trajanje (sati)": data.get("trajanje"),
+            "Preferencije za studenta": data.get("preferencije_za_studenta"),
+            "Lokacija": data.get("lokacija"),
+            "Željeno okvirno vrijeme početka": data.get(
+                "zeljeno_okvirno_vrijeme_pocetka"
+            ),
+            "Angažman FIPU": data.get("angazman_fipu"),
+            "Napomena": data.get("napomena"),
+            "Selekcija": data.get("selekcija"),
+            "Proces selekcije": data.get("proces_selekcije"),
+        },
+    )
+    return web.Response(text=json.dumps(res), content_type="application/json")
 
 
 @routes.get("/{table_name}")

@@ -51,9 +51,13 @@ class BaserowClient:
         return self.handle_response(response)
 
     def create_row(self, table_id, data):
-        url = self.get_table_url(table_id)
-        response = requests.post(url, headers=self.headers, json=data)
-        return self.handle_response(response)
+        try:
+            url = self.get_table_url(table_id)
+            response = requests.post(url, headers=self.headers, json=data)
+            print("response", response.content)
+            return self.handle_response(response)
+        except Exception as e:
+            print(e)
 
     def update_row(self, table_id, row_id, data):
         url = self.get_table_url(table_id, row_id)
