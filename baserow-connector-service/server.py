@@ -67,6 +67,13 @@ async def prijava_novog_zadatka(req):
     return web.Response(text=json.dumps(res), content_type="application/json")
 
 
+@routes.post("/prijava-preferencija")
+async def prijava_preferencija(req):
+    row_data = await req.json()
+    res = client.create_row(table_id=TABLES_MAP["student-preferencije"], data=row_data)
+    return web.Response(text=json.dumps(res), content_type="application/json")
+
+
 @routes.get("/{table_name}")
 async def fetch_table_rows(request):
     queryParams = []
@@ -84,7 +91,24 @@ async def fetch_table_rows(request):
     if search:
         queryParams.append(f"search={search}")
 
+    row_id = request.rel_url.query.get("id")
+    if row_id:
+        row_data = client.get_row(table_id, row_id)
+        if "error" in row_data:
+            return web.Response(
+                text=json.dumps(row_data["error"]),
+                status=row_data["status_code"],
+                content_type="application/json",
+            )
+        return web.Response(text=json.dumps(row_data), content_type="application/json")
+
     rows = client.get_table_rows(table_id, queryParams)
+    if "error" in rows:
+        return web.Response(
+            text=json.dumps(rows["error"]),
+            status=rows["status_code"],
+            content_type="application/json",
+        )
     return web.Response(text=json.dumps(rows), content_type="application/json")
 
 
@@ -119,4 +143,5 @@ if __name__ == "__main__":
     app = run()
     web.run_app(app, port=8080)
 
+# conda activate baserow-connector-service
 # npx nodemon server.py

@@ -27,8 +27,18 @@ class BaserowClient:
     def handle_response(self, response):
         if response.status_code == 200:
             return response.json()
+        elif 400 <= response.status_code < 500:
+            # client error from Baserow
+            return {
+                "error": response.json().get("detail", "Client error."),
+                "status_code": response.status_code,
+            }
         else:
-            response.raise_for_status()
+            # server error from Baserow
+            return {
+                "error": response.json().get("detail", "Server error."),
+                "status_code": response.status_code,
+            }
 
     def get_table_fields(self, table_id):
         url = f"{self.base_url}database/fields/table/{table_id}/"
