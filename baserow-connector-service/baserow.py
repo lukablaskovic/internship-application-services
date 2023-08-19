@@ -26,7 +26,11 @@ class BaserowClient:
 
     def handle_response(self, response):
         if response.status_code == 200:
-            return response.json()
+            return {
+                "message": "success",
+                "data": response.json(),
+                "status_code": response.status_code,
+            }
         elif 400 <= response.status_code < 500:
             # client error from Baserow
             return {
