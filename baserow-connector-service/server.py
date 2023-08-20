@@ -43,10 +43,8 @@ async def add_student(req):
 @routes.post("/prijava-zadatka")
 async def prijava_novog_zadatka(req):
     data = await req.json()
-    res = client.create_row(
-        TABLES_MAP["zadaci-za-odabir"],
+    new_row_data = dict(
         {
-            "ID Zadatka": data.get("id_zadatka"),
             "Poduzeće": data.get("poduzece"),
             "Kontakt email": data.get("kontakt_email"),
             "Zadatak studenta": data.get("zadatak_studenta"),
@@ -64,7 +62,27 @@ async def prijava_novog_zadatka(req):
             "Proces selekcije": data.get("proces_selekcije"),
         },
     )
-    return web.Response(text=json.dumps(res), content_type="application/json")
+
+    creation_response = client.create_row(TABLES_MAP["zadaci-za-odabir"], new_row_data)
+
+    if "data" in creation_response:
+        new_row_id = creation_response["data"]["id"]
+
+        poduzece_value = data.get("poduzece")[0] if data.get("poduzece") else ""
+
+        formatted_id = f"Zadatak {new_row_id} - {poduzece_value}"
+        update_response = client.update_row(
+            TABLES_MAP["zadaci-za-odabir"], new_row_id, {"ID Zadatka": formatted_id}
+        )
+
+        return web.Response(
+            text=json.dumps(update_response), content_type="application/json"
+        )
+
+    else:
+        return web.Response(
+            text=json.dumps(creation_response), content_type="application/json"
+        )
 
 
 @routes.post("/prijava-preferencija")
