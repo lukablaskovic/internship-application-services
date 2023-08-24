@@ -40,6 +40,21 @@ async def add_student(req):
     return web.Response(text=json.dumps(res), content_type="application/json")
 
 
+@routes.delete("/students/{attribute}/{value}")
+async def delete_student(req):
+    attribute = req.match_info.get("attribute", None)
+    value = req.match_info.get("value", None)
+
+    if not attribute or not value:
+        return web.Response(
+            text=json.dumps({"error": "Invalid attribute or value."}),
+            status=400,
+            content_type="application/json",
+        )
+    res = client.delete_row_by_attribute(TABLES_MAP["studenti"], attribute, value)
+    return web.Response(text=json.dumps(res), content_type="application/json")
+
+
 @routes.post("/prijava-zadatka")
 async def prijava_novog_zadatka(req):
     data = await req.json()

@@ -64,6 +64,14 @@ class BaserowClient:
         response = requests.get(url, headers=self.headers)
         return self.handle_response(response)
 
+    def get_row_id_by_attribute(self, table_id, attribute_name, attribute_value):
+        parameters = [f"filter_field_{attribute_name}={attribute_value}"]
+        rows = self.get_table_rows(table_id, parameters)
+        print(rows)
+        if "data" in rows and len(rows["data"]) > 0:
+            return rows["data"]["results"][0]["id"]
+        return None
+
     def create_row(self, table_id, data):
         try:
             url = self.get_table_url(table_id)
@@ -85,3 +93,16 @@ class BaserowClient:
             return True
         else:
             response.raise_for_status()
+
+    def delete_row_by_attribute(self, table_id, attribute_name, attribute_value):
+        row_id = self.get_row_id_by_attribute(table_id, attribute_name, attribute_value)
+        if row_id:
+            return {
+                "message": f"Row {row_id} from table {table_id} deleted successfully!",
+                "status": self.delete_row(table_id, row_id),
+            }
+        else:
+            return {
+                "error": f"{attribute_name.capitalize()} not found.",
+                "status_code": 404,
+            }
