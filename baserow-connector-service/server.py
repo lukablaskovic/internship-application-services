@@ -102,9 +102,61 @@ async def prijava_novog_zadatka(req):
 
 @routes.post("/prijava-preferencija")
 async def prijava_preferencija(req):
+    print("BASEROW_POST_prijava_preferencija\n", req)
     row_data = await req.json()
     res = client.create_row(table_id=TABLES_MAP["student-preferencije"], data=row_data)
+    print(res)
     return web.Response(text=json.dumps(res), content_type="application/json")
+
+
+@routes.get("/student-preferencije-detailed/{jmbag}")
+async def fetch_student_preferences_detailed(request):
+    jmbag = request.match_info.get("jmbag", None)
+
+    # If JMBAG is missing, return error
+    if not jmbag:
+        return web.Response(
+            text=json.dumps({"error": "Missing JMBAG."}),
+            status=400,
+            content_type="application/json",
+        )
+
+    # First get the student preferences
+    table_id = TABLES_MAP["student-preferencije"]
+    row_id = client.get_row_id_by_attribute(table_id, "JMBAG", jmbag)
+    if not row_id:
+        return web.Response(
+            text=json.dumps({"error": "Student not found."}),
+            status=404,
+            content_type="application/json",
+        )
+
+    student_preferences = client.get_row(table_id, row_id)
+
+    if "error" in student_preferences:
+        return web.Response(
+            text=json.dumps(student_preferences),
+            status=student_preferences["status_code"],
+            content_type="application/json",
+        )
+
+    # Fetch details for each Zadatak
+    for preference_key in ["Prvi odabir", "Drugi odabir", "Treći odabir"]:
+        preference = student_preferences["data"].get(preference_key)
+        if preference:
+            zadatak_id = preference[0]["id"] if preference else None
+            if zadatak_id:
+                zadatak_data = client.get_row(
+                    TABLES_MAP["zadaci-za-odabir"], zadatak_id
+                )
+                preference[0]["details"] = (
+                    zadatak_data["data"] if "data" in zadatak_data else None
+                )
+
+    return web.Response(
+        text=json.dumps(student_preferences),
+        content_type="application/json",
+    )
 
 
 @routes.get("/{table_name}")
