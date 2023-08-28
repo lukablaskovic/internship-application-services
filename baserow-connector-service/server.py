@@ -14,9 +14,10 @@ app = None
 
 TABLES_MAP = {
     "studenti": "186615",  # HARDKODIRANO
-    "firme": "186616",
+    "poslodavci": "186616",
     "zadaci-za-odabir": "186618",
     "student-preferencije": "186619",
+    "alokacije": "186614",
     "prijavnice": "186620",
     "dnevnici": "186621",
 }
@@ -104,9 +105,42 @@ async def prijava_novog_zadatka(req):
 async def prijava_preferencija(req):
     print("BASEROW_POST_prijava_preferencija\n", req)
     row_data = await req.json()
+    print(row_data)
     res = client.create_row(table_id=TABLES_MAP["student-preferencije"], data=row_data)
-    print(res)
-    return web.Response(text=json.dumps(res), content_type="application/json")
+    print("RES", res)
+    response_data = {}  # this will hold the aggregated response
+
+    if "data" in res:
+        student_id = res["data"]["id"]
+        student_jmbag = row_data["JMBAG"]
+        response_data["student_id"] = student_id  # add student_id to the response
+
+        current_date = dt.datetime.utcnow().isoformat() + "Z"
+
+        alokacija_data = {
+            "JMBAG": student_jmbag,
+            "Student": [student_jmbag],
+            "Datum prijave": current_date,
+            "process_instance_id": row_data["id_instance"],
+            "frontend_url": row_data["_frontend_url"],
+        }
+
+        # Add to Alokacija table
+        alokacija_response = client.create_row(
+            table_id=TABLES_MAP["alokacija"], data=alokacija_data
+        )
+        print(alokacija_response)
+
+        if "data" in alokacija_response:
+            response_data["alokacija_id"] = alokacija_response["data"]["id"]
+        elif "error" in alokacija_response:
+            return web.Response(
+                text=json.dumps(alokacija_response["error"]),
+                status=alokacija_response["status_code"],
+                content_type="application/json",
+            )
+
+    return web.Response(text=json.dumps(response_data), content_type="application/json")
 
 
 @routes.get("/student-preferencije-detailed/{jmbag}")
@@ -157,6 +191,49 @@ async def fetch_student_preferences_detailed(request):
         text=json.dumps(student_preferences),
         content_type="application/json",
     )
+
+
+@routes.get("/alokacije/public")
+async def fetch_public_alokacije(request):
+    table_id = TABLES_MAP["alokacije"]
+    alokacije_rows = client.get_table_rows(table_id)
+
+    actual_rows = alokacije_rows["data"]["results"]
+
+    # check for any errors
+    if "error" in actual_rows:
+        return web.Response(
+            text=json.dumps(alokacije_rows["error"]),
+            status=alokacije_rows["status_code"],
+            content_type="application/json",
+        )
+
+    results = []
+    print("actual_rows", actual_rows)
+    for row in actual_rows:
+        # get the referenced zadatak row
+        zadatak_id = row["Alocirani zadatak"][0]["value"]
+        zadatak_data = client.get_row(
+            TABLES_MAP["zadaci-za-odabir"], row["Alocirani zadatak"][0]["id"]
+        )
+        print("zadatak_id::", zadatak_id)
+        print("zadatak_data::", zadatak_data)
+        if "data" in zadatak_data:
+            zadatak_details = zadatak_data["data"]
+            results.append(
+                {
+                    "JMBAG": row["JMBAG"],
+                    "Alocirani zadatak": row["Alocirani zadatak"][0]["value"]
+                    if row["Alocirani zadatak"]
+                    else None,
+                    "Opis zadatka": zadatak_details["Zadatak studenta"],
+                    "Kontakt": zadatak_details["Kontakt email"],
+                    "prijavnica_ispunjena": row["Popunjena prijavnica"],
+                    "predan_dnevnik_prakse": row["Predan dnevnik prakse"],
+                }
+            )
+
+    return web.Response(text=json.dumps(results), content_type="application/json")
 
 
 @routes.get("/{table_name}")
