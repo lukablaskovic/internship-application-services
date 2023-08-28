@@ -127,7 +127,7 @@ async def prijava_preferencija(req):
 
         # Add to Alokacija table
         alokacija_response = client.create_row(
-            table_id=TABLES_MAP["alokacija"], data=alokacija_data
+            table_id=TABLES_MAP["alokacije"], data=alokacija_data
         )
         print(alokacija_response)
 
@@ -193,6 +193,47 @@ async def fetch_student_preferences_detailed(request):
     )
 
 
+@routes.post("/alokacija")
+async def alokacija_studenta(request):
+    # Parse incoming request data
+    data = await request.json()
+    student = data.get("Student")
+    alocirani_zadatak_id = data.get("Alocirani zadatak")
+
+    if not student or not alocirani_zadatak_id:
+        return web.Response(
+            text=json.dumps({"error": "Missing JMBAG or Alocirani zadatak"}),
+            status=400,
+            content_type="application/json",
+        )
+
+    # Get the row_id of the student in the "alokacije" table
+    table_id = TABLES_MAP["alokacije"]
+    row_id = client.get_row_id_by_attribute(table_id, "JMBAG", student[0])
+
+    if not row_id:
+        return web.Response(
+            text=json.dumps({"error": "Student not found in alokacije."}),
+            status=404,
+            content_type="application/json",
+        )
+
+    # Update the student's Alocirani zadatak
+    update_data = {"Alocirani zadatak": [alocirani_zadatak_id]}
+    update_response = client.update_row(table_id, row_id, update_data)
+
+    if "error" in update_response:
+        return web.Response(
+            text=json.dumps(update_response["error"]),
+            status=update_response["status_code"],
+            content_type="application/json",
+        )
+
+    return web.Response(
+        text=json.dumps(update_response), content_type="application/json"
+    )
+
+
 @routes.get("/alokacije/public")
 async def fetch_public_alokacije(request):
     table_id = TABLES_MAP["alokacije"]
@@ -211,27 +252,40 @@ async def fetch_public_alokacije(request):
     results = []
     print("actual_rows", actual_rows)
     for row in actual_rows:
-        # get the referenced zadatak row
-        zadatak_id = row["Alocirani zadatak"][0]["value"]
-        zadatak_data = client.get_row(
-            TABLES_MAP["zadaci-za-odabir"], row["Alocirani zadatak"][0]["id"]
+        # Initialize to None
+        zadatak_id = None
+        zadatak_details = None
+
+        # Check if "Alocirani zadatak" is not empty
+        if row.get("Alocirani zadatak"):
+            zadatak_id = row["Alocirani zadatak"][0]["value"]
+            try:
+                zadatak_data = client.get_row(
+                    TABLES_MAP["zadaci-za-odabir"], row["Alocirani zadatak"][0]["id"]
+                )
+                if "data" in zadatak_data:
+                    zadatak_details = zadatak_data["data"]
+            except Exception as e:
+                print(e)
+                zadatak_data = None
+
+            print("zadatak_id::", zadatak_id)
+            print("zadatak_data::", zadatak_data)
+
+        results.append(
+            {
+                "JMBAG": row["JMBAG"],
+                "Alocirani zadatak": zadatak_id,
+                "Opis zadatka": zadatak_details["Zadatak studenta"]
+                if zadatak_details
+                else None,
+                "Kontakt": zadatak_details["Kontakt email"]
+                if zadatak_details
+                else None,
+                "prijavnica_ispunjena": row["Popunjena prijavnica"],
+                "predan_dnevnik_prakse": row["Predan dnevnik prakse"],
+            }
         )
-        print("zadatak_id::", zadatak_id)
-        print("zadatak_data::", zadatak_data)
-        if "data" in zadatak_data:
-            zadatak_details = zadatak_data["data"]
-            results.append(
-                {
-                    "JMBAG": row["JMBAG"],
-                    "Alocirani zadatak": row["Alocirani zadatak"][0]["value"]
-                    if row["Alocirani zadatak"]
-                    else None,
-                    "Opis zadatka": zadatak_details["Zadatak studenta"],
-                    "Kontakt": zadatak_details["Kontakt email"],
-                    "prijavnica_ispunjena": row["Popunjena prijavnica"],
-                    "predan_dnevnik_prakse": row["Predan dnevnik prakse"],
-                }
-            )
 
     return web.Response(text=json.dumps(results), content_type="application/json")
 
