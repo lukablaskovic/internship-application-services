@@ -56,7 +56,11 @@ class BaserowClient:
                 url += "&" + "&".join(parameters)
             else:
                 url += "?" + "&".join(parameters)
+
+        print("Requesting URL:", url)
         response = requests.get(url, headers=self.headers)
+        print("Response Status:", response.status_code)
+        print("Response Content:", response.text)
         return self.handle_response(response)
 
     def get_row(self, table_id, row_id):
@@ -65,9 +69,9 @@ class BaserowClient:
         return self.handle_response(response)
 
     def get_row_id_by_attribute(self, table_id, attribute_name, attribute_value):
-        parameters = [f"filter_field_{attribute_name}={attribute_value}"]
+        parameters = [f"filter__{attribute_name}__equal={attribute_value}"]
         rows = self.get_table_rows(table_id, parameters)
-        print(rows)
+        print("rows", rows)
         if "data" in rows and len(rows["data"]) > 0:
             return rows["data"]["results"][0]["id"]
         return None

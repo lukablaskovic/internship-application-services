@@ -234,10 +234,26 @@ async def alokacija_studenta(request):
     )
 
 
+Alokacija_Table_Mappings = {
+    "JMBAG": "field_1255530",
+}
+
+
 @routes.get("/alokacije/public")
 async def fetch_public_alokacije(request):
+    print("_____________________________________________")
     table_id = TABLES_MAP["alokacije"]
-    alokacije_rows = client.get_table_rows(table_id)
+
+    # Extract the JMBAG value from query parameters and create a list of parameters
+    jmbag = request.query.get("JMBAG", None)
+    print("***JMBAG***", jmbag)
+    parameters = []
+    if jmbag:
+        parameters.append(f"filter__{Alokacija_Table_Mappings['JMBAG']}__equal={jmbag}")
+
+    # Pass the parameters list when fetching rows
+
+    alokacije_rows = client.get_table_rows(table_id, parameters=parameters)
 
     actual_rows = alokacije_rows["data"]["results"]
 
@@ -286,6 +302,21 @@ async def fetch_public_alokacije(request):
                 "predan_dnevnik_prakse": row["Predan dnevnik prakse"],
             }
         )
+        # Check if JMBAG was provided in the query parameters.
+        if jmbag:
+            # If there's a matching result, return the first object.
+            if results:
+                return web.Response(
+                    text=json.dumps(results[0]), content_type="application/json"
+                )
+            # If no results match the given JMBAG, return a 404 error.
+            else:
+                return web.Response(
+                    text=json.dumps({"error": "No matching record found"}),
+                    status=404,
+                    content_type="application/json",
+                )
+    # If JMBAG was not provided, return the entire results list as before.
 
     return web.Response(text=json.dumps(results), content_type="application/json")
 

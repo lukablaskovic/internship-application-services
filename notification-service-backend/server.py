@@ -37,6 +37,8 @@ async def send_email(request, template_type):
         to_emails=query_dict["to"],
     )
 
+    print(message)
+
     if template_type == "student_after_approval":
         message.template_id = STUDENT_AFTER_APPROVAL_TEMPLATE
     elif template_type == "student_after_allocation":
