@@ -13,7 +13,7 @@ routes = web.RouteTableDef()
 app = None
 
 TABLES_MAP = {
-    "studenti": "186615",  # HARDKODIRANO
+    "studenti": "186615",
     "poslodavci": "186616",
     "zadaci-za-odabir": "186618",
     "student-preferencije": "186619",
@@ -27,6 +27,8 @@ client = BaserowClient()
 
 @routes.post("/students")
 async def add_student(req):
+    print("BASEROW_POST_students\n", req)
+
     data = await req.json()
     res = client.create_row(
         TABLES_MAP["studenti"],
@@ -41,18 +43,18 @@ async def add_student(req):
     return web.Response(text=json.dumps(res), content_type="application/json")
 
 
-@routes.delete("/students/{attribute}/{value}")
+@routes.delete("/students/email/{value}")
 async def delete_student(req):
-    attribute = req.match_info.get("attribute", None)
+    print("BASEROW_DELETE_delete_student\n", req)
     value = req.match_info.get("value", None)
 
-    if not attribute or not value:
+    if not value:
         return web.Response(
-            text=json.dumps({"error": "Invalid attribute or value."}),
+            text=json.dumps({"error": "Invalid email."}),
             status=400,
             content_type="application/json",
         )
-    res = client.delete_row_by_attribute(TABLES_MAP["studenti"], attribute, value)
+    res = client.delete_row_by_attribute(TABLES_MAP["studenti"], "Email", value)
     return web.Response(text=json.dumps(res), content_type="application/json")
 
 
@@ -103,17 +105,15 @@ async def prijava_novog_zadatka(req):
 
 @routes.post("/prijava-preferencija")
 async def prijava_preferencija(req):
-    print("BASEROW_POST_prijava_preferencija\n", req)
+    print("BASEROW_POST_prijava-preferencija\n", req)
     row_data = await req.json()
-    print(row_data)
     res = client.create_row(table_id=TABLES_MAP["student-preferencije"], data=row_data)
-    print("RES", res)
-    response_data = {}  # this will hold the aggregated response
+    response_data = {}
 
     if "data" in res:
         student_id = res["data"]["id"]
         student_jmbag = row_data["JMBAG"]
-        response_data["student_id"] = student_id  # add student_id to the response
+        response_data["student_id"] = student_id
 
         current_date = dt.datetime.utcnow().isoformat() + "Z"
 
@@ -129,8 +129,6 @@ async def prijava_preferencija(req):
         alokacija_response = client.create_row(
             table_id=TABLES_MAP["alokacije"], data=alokacija_data
         )
-        print(alokacija_response)
-
         if "data" in alokacija_response:
             response_data["alokacija_id"] = alokacija_response["data"]["id"]
         elif "error" in alokacija_response:
@@ -143,12 +141,12 @@ async def prijava_preferencija(req):
     return web.Response(text=json.dumps(response_data), content_type="application/json")
 
 
-@routes.get("/student-preferencije-detailed/{jmbag}")
+@routes.get("/student-preferencije-detailed/{JMBAG}")
 async def fetch_student_preferences_detailed(request):
-    jmbag = request.match_info.get("jmbag", None)
+    JMBAG = request.match_info.get("JMBAG", None)
 
     # If JMBAG is missing, return error
-    if not jmbag:
+    if not JMBAG:
         return web.Response(
             text=json.dumps({"error": "Missing JMBAG."}),
             status=400,
@@ -157,7 +155,9 @@ async def fetch_student_preferences_detailed(request):
 
     # First get the student preferences
     table_id = TABLES_MAP["student-preferencije"]
-    row_id = client.get_row_id_by_attribute(table_id, "JMBAG", jmbag)
+    row_id = client.get_row_id_by_attribute(
+        table_id, "JMBAG", JMBAG, br.Student_preferencije_Table_Mappings
+    )
     if not row_id:
         return web.Response(
             text=json.dumps({"error": "Student not found."}),
@@ -234,93 +234,57 @@ async def alokacija_studenta(request):
     )
 
 
-Alokacija_Table_Mappings = {
-    "JMBAG": "field_1255530",
-}
-
-
 @routes.get("/alokacije/public")
 async def fetch_public_alokacije(request):
-    print("_____________________________________________")
     table_id = TABLES_MAP["alokacije"]
 
-    # Extract the JMBAG value from query parameters and create a list of parameters
+    # Extract the JMBAG value from query parameters
     jmbag = request.query.get("JMBAG", None)
-    print("***JMBAG***", jmbag)
-    parameters = []
+
     if jmbag:
-        parameters.append(f"filter__{Alokacija_Table_Mappings['JMBAG']}__equal={jmbag}")
+        # Get the student alokacija record ID using JMBAG
+        row_id = client.get_row_id_by_attribute(
+            table_id, "JMBAG", jmbag, br.Alokacija_Table_Mappings
+        )
 
-    # Pass the parameters list when fetching rows
+        if not row_id:  # If there's no matching row, return an empty list
+            return web.Response(
+                text=json.dumps([]),
+                content_type="application/json",
+            )
 
-    alokacije_rows = client.get_table_rows(table_id, parameters=parameters)
+        # Fetch the specific student alokacija using row ID
+        alokacija_data = client.get_row(table_id, row_id)
+        if "error" in alokacija_data:
+            return web.Response(
+                text=json.dumps(alokacija_data["error"]),
+                status=alokacija_data["status_code"],
+                content_type="application/json",
+            )
 
-    actual_rows = alokacije_rows["data"]["results"]
-
-    # check for any errors
-    if "error" in actual_rows:
+        # Return the specific student alokacija
         return web.Response(
-            text=json.dumps(alokacije_rows["error"]),
-            status=alokacije_rows["status_code"],
+            text=json.dumps(alokacija_data["data"]),
+            content_type="application/json",
+        )
+    else:
+        # If no JMBAG was provided, fetch all rows
+        alokacije_rows = client.get_table_rows(table_id)
+        if "error" in alokacije_rows:
+            return web.Response(
+                text=json.dumps(alokacije_rows["error"]),
+                status=alokacije_rows["status_code"],
+                content_type="application/json",
+            )
+
+        # Return all alokacije
+        return web.Response(
+            text=json.dumps(alokacije_rows["data"]["results"]),
             content_type="application/json",
         )
 
-    results = []
-    print("actual_rows", actual_rows)
-    for row in actual_rows:
-        # Initialize to None
-        zadatak_id = None
-        zadatak_details = None
 
-        # Check if "Alocirani zadatak" is not empty
-        if row.get("Alocirani zadatak"):
-            zadatak_id = row["Alocirani zadatak"][0]["value"]
-            try:
-                zadatak_data = client.get_row(
-                    TABLES_MAP["zadaci-za-odabir"], row["Alocirani zadatak"][0]["id"]
-                )
-                if "data" in zadatak_data:
-                    zadatak_details = zadatak_data["data"]
-            except Exception as e:
-                print(e)
-                zadatak_data = None
-
-            print("zadatak_id::", zadatak_id)
-            print("zadatak_data::", zadatak_data)
-
-        results.append(
-            {
-                "JMBAG": row["JMBAG"],
-                "Alocirani zadatak": zadatak_id,
-                "Opis zadatka": zadatak_details["Zadatak studenta"]
-                if zadatak_details
-                else None,
-                "Kontakt": zadatak_details["Kontakt email"]
-                if zadatak_details
-                else None,
-                "prijavnica_ispunjena": row["Popunjena prijavnica"],
-                "predan_dnevnik_prakse": row["Predan dnevnik prakse"],
-            }
-        )
-        # Check if JMBAG was provided in the query parameters.
-        if jmbag:
-            # If there's a matching result, return the first object.
-            if results:
-                return web.Response(
-                    text=json.dumps(results[0]), content_type="application/json"
-                )
-            # If no results match the given JMBAG, return a 404 error.
-            else:
-                return web.Response(
-                    text=json.dumps({"error": "No matching record found"}),
-                    status=404,
-                    content_type="application/json",
-                )
-    # If JMBAG was not provided, return the entire results list as before.
-
-    return web.Response(text=json.dumps(results), content_type="application/json")
-
-
+# Generic GET route for fetching rows from a table
 @routes.get("/{table_name}")
 async def fetch_table_rows(request):
     queryParams = []

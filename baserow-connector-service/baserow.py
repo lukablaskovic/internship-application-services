@@ -12,6 +12,8 @@ POST_PATCH_HEADER = {
     "Content-Type": "application/json",
 }
 
+from mappings import *
+
 
 class BaserowClient:
     def __init__(self, base_url="https://api.baserow.io/api/"):
@@ -57,10 +59,8 @@ class BaserowClient:
             else:
                 url += "?" + "&".join(parameters)
 
-        print("Requesting URL:", url)
         response = requests.get(url, headers=self.headers)
-        print("Response Status:", response.status_code)
-        print("Response Content:", response.text)
+
         return self.handle_response(response)
 
     def get_row(self, table_id, row_id):
@@ -68,11 +68,17 @@ class BaserowClient:
         response = requests.get(url, headers=self.headers)
         return self.handle_response(response)
 
-    def get_row_id_by_attribute(self, table_id, attribute_name, attribute_value):
-        parameters = [f"filter__{attribute_name}__equal={attribute_value}"]
+    def get_row_id_by_attribute(
+        self, table_id, attribute_name, attribute_value, table_mappings
+    ):
+        parameters = [
+            f"filter__{table_mappings[attribute_name]}__equal={attribute_value}"
+        ]
+        print(f"Filtering by: {parameters}")
+
         rows = self.get_table_rows(table_id, parameters)
         print("rows", rows)
-        if "data" in rows and len(rows["data"]) > 0:
+        if "data" in rows and rows["data"]["results"]:
             return rows["data"]["results"][0]["id"]
         return None
 
