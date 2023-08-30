@@ -54,7 +54,9 @@ async def delete_student(req):
             status=400,
             content_type="application/json",
         )
-    res = client.delete_row_by_attribute(TABLES_MAP["studenti"], "Email", value)
+    res = client.delete_row_by_attribute(
+        TABLES_MAP["studenti"], "Email", value, br.Student_Table_Mappings
+    )
     return web.Response(text=json.dumps(res), content_type="application/json")
 
 
@@ -209,7 +211,9 @@ async def alokacija_studenta(request):
 
     # Get the row_id of the student in the "alokacije" table
     table_id = TABLES_MAP["alokacije"]
-    row_id = client.get_row_id_by_attribute(table_id, "JMBAG", student[0])
+    row_id = client.get_row_id_by_attribute(
+        table_id, "JMBAG", student[0], br.Alokacija_Table_Mappings
+    )
 
     if not row_id:
         return web.Response(
@@ -239,19 +243,41 @@ async def fetch_public_alokacije(request):
     table_id = TABLES_MAP["alokacije"]
 
     # Extract the JMBAG value from query parameters
-    jmbag = request.query.get("JMBAG", None)
+    JMBAG = request.query.get("JMBAG", None)
 
-    if jmbag:
+    def format_output(row):
+        # Assume you have a function or method to fetch zadatak_details using zadatak_id
+        try:
+            zadatak_id = row.get("Zadatak ID", None)
+            zadatak_data = client.get_row(
+                TABLES_MAP["zadaci-za-odabir"], row["Alocirani zadatak"][0]["id"]
+            )
+            if "data" in zadatak_data:
+                zadatak_details = zadatak_data["data"]
+        except Exception as e:
+            print(e)
+            zadatak_data = None
+        return {
+            "JMBAG": row["JMBAG"],
+            "Alocirani zadatak": zadatak_id,
+            "Opis zadatka": zadatak_details["Zadatak studenta"]
+            if zadatak_details
+            else None,
+            "poslodavac_kontakt": zadatak_details["Kontakt email"]
+            if zadatak_details
+            else None,
+            "prijavnica_ispunjena": row["Popunjena prijavnica"],
+            "predan_dnevnik_prakse": row["Predan dnevnik prakse"],
+        }
+
+    if JMBAG:
         # Get the student alokacija record ID using JMBAG
         row_id = client.get_row_id_by_attribute(
-            table_id, "JMBAG", jmbag, br.Alokacija_Table_Mappings
+            table_id, "JMBAG", JMBAG, br.Alokacija_Table_Mappings
         )
 
-        if not row_id:  # If there's no matching row, return an empty list
-            return web.Response(
-                text=json.dumps([]),
-                content_type="application/json",
-            )
+        if not row_id:  # If there's no matching row, return None
+            return web.Response(text=json.dumps(None), content_type="application/json")
 
         # Fetch the specific student alokacija using row ID
         alokacija_data = client.get_row(table_id, row_id)
@@ -264,9 +290,10 @@ async def fetch_public_alokacije(request):
 
         # Return the specific student alokacija
         return web.Response(
-            text=json.dumps(alokacija_data["data"]),
+            text=json.dumps(format_output(alokacija_data["data"])),
             content_type="application/json",
         )
+
     else:
         # If no JMBAG was provided, fetch all rows
         alokacije_rows = client.get_table_rows(table_id)
@@ -277,11 +304,9 @@ async def fetch_public_alokacije(request):
                 content_type="application/json",
             )
 
-        # Return all alokacije
-        return web.Response(
-            text=json.dumps(alokacije_rows["data"]["results"]),
-            content_type="application/json",
-        )
+        # Format and return all alokacije
+        results = [format_output(row) for row in alokacije_rows["data"]["results"]]
+        return web.Response(text=json.dumps(results), content_type="application/json")
 
 
 # Generic GET route for fetching rows from a table

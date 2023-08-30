@@ -104,8 +104,12 @@ class BaserowClient:
         else:
             response.raise_for_status()
 
-    def delete_row_by_attribute(self, table_id, attribute_name, attribute_value):
-        row_id = self.get_row_id_by_attribute(table_id, attribute_name, attribute_value)
+    def delete_row_by_attribute(
+        self, table_id, attribute_name, attribute_value, table_mappings
+    ):
+        row_id = self.get_row_id_by_attribute(
+            table_id, attribute_name, attribute_value, table_mappings
+        )
         if row_id:
             return {
                 "message": f"Row {row_id} from table {table_id} deleted successfully!",
