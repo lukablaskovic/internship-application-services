@@ -13,37 +13,38 @@ routes = web.RouteTableDef()
 app = None
 
 TABLES_MAP = {
-    "studenti": "186615",
-    "poslodavci": "186616",
-    "zadaci-za-odabir": "186618",
-    "student-preferencije": "186619",
-    "alokacije": "186614",
-    "prijavnice": "186620",
-    "dnevnici": "186621",
+    "Student": "186615",
+    "Poslodavac": "186616",
+    "Zadaci_za_odabir": "186618",
+    "Student_preferencije": "186619",
+    "Alokacija": "186614",
+    "Prijavnica": "186620",
+    "Dnevnik_prakse": "186621",
 }
+
 
 client = BaserowClient()
 
 
-@routes.post("/students")
-async def add_student(req):
+@routes.post("/api/student")
+async def add_new_student(req):
     print("BASEROW_POST_students\n", req)
 
     data = await req.json()
     res = client.create_row(
-        TABLES_MAP["studenti"],
+        TABLES_MAP["Student"],
         {
-            "JMBAG": data.get("jmbag"),
-            "Ime": data.get("name"),
-            "Prezime": data.get("surname"),
-            "Email": data.get("email"),
-            "Godina studija": data.get("year_of_study"),
+            "JMBAG": data.get("JMBAG"),
+            "ime": data.get("ime"),
+            "prezime": data.get("prezime"),
+            "email": data.get("email"),
+            "godina_studija": data.get("godina_studija"),
         },
     )
     return web.Response(text=json.dumps(res), content_type="application/json")
 
 
-@routes.delete("/students/email/{value}")
+@routes.delete("/api/student/email/{value}")
 async def delete_student(req):
     print("BASEROW_DELETE_delete_student\n", req)
     value = req.match_info.get("value", None)
@@ -55,35 +56,35 @@ async def delete_student(req):
             content_type="application/json",
         )
     res = client.delete_row_by_attribute(
-        TABLES_MAP["studenti"], "Email", value, br.Student_Table_Mappings
+        TABLES_MAP["Student"], "email", value, br.Student_Mappings
     )
     return web.Response(text=json.dumps(res), content_type="application/json")
 
 
-@routes.post("/prijava-zadatka")
-async def prijava_novog_zadatka(req):
+@routes.post("/api/zadaci_za_odabir")
+async def add_new_assignment(req):
     data = await req.json()
     new_row_data = dict(
         {
-            "Poduzeće": data.get("poduzece"),
-            "Kontakt email": data.get("kontakt_email"),
-            "Zadatak studenta": data.get("zadatak_studenta"),
-            "Preferirane tehnologije": data.get("preferirane_tehnologije"),
-            "Potrebno imati": data.get("potrebno_imati"),
-            "Trajanje (sati)": data.get("trajanje"),
-            "Preferencije za studenta": data.get("preferencije_za_studenta"),
-            "Lokacija": data.get("lokacija"),
-            "Željeno okvirno vrijeme početka": data.get(
+            "Poslodavac": data.get("Poslodavac"),
+            "poslodavac_email": data.get("poslodavac_email"),
+            "opis_zadatka": data.get("opis_zadatka"),
+            "preferirane_tehnologije": data.get("preferirane_tehnologije"),
+            "potrebno_imati": data.get("potrebno_imati"),
+            "trajanje_sati": data.get("trajanje_sati"),
+            "preferencije_za_studenta": data.get("preferencije_za_studenta"),
+            "lokacija": data.get("lokacija"),
+            "zeljeno_okvirno_vrijeme_pocetka": data.get(
                 "zeljeno_okvirno_vrijeme_pocetka"
             ),
-            "Angažman FIPU": data.get("angazman_fipu"),
-            "Napomena": data.get("napomena"),
-            "Selekcija": data.get("selekcija"),
-            "Proces selekcije": data.get("proces_selekcije"),
+            "angazman_fipu": data.get("angazman_fipu"),
+            "napomena": data.get("napomena"),
+            "seleckija": data.get("selekcija"),
+            "proces_selekcije": data.get("proces_selekcije"),
         },
     )
 
-    creation_response = client.create_row(TABLES_MAP["zadaci-za-odabir"], new_row_data)
+    creation_response = client.create_row(TABLES_MAP["Zadaci_za_odabir"], new_row_data)
 
     if "data" in creation_response:
         new_row_id = creation_response["data"]["id"]
@@ -92,7 +93,7 @@ async def prijava_novog_zadatka(req):
 
         formatted_id = f"Zadatak {new_row_id} - {poduzece_value}"
         update_response = client.update_row(
-            TABLES_MAP["zadaci-za-odabir"], new_row_id, {"ID Zadatka": formatted_id}
+            TABLES_MAP["Zadaci_za_odabir"], new_row_id, {"id_zadatak": formatted_id}
         )
 
         return web.Response(
@@ -105,11 +106,11 @@ async def prijava_novog_zadatka(req):
         )
 
 
-@routes.post("/prijava-preferencija")
-async def prijava_preferencija(req):
-    print("BASEROW_POST_prijava-preferencija\n", req)
+@routes.post("/api/student_preferencije")
+async def register_assignments(req):
+    print("BASEROW_POST_register_assignments\n", req)
     row_data = await req.json()
-    res = client.create_row(table_id=TABLES_MAP["student-preferencije"], data=row_data)
+    res = client.create_row(table_id=TABLES_MAP["Student_preferencije"], data=row_data)
     response_data = {}
 
     if "data" in res:
@@ -122,14 +123,14 @@ async def prijava_preferencija(req):
         alokacija_data = {
             "JMBAG": student_jmbag,
             "Student": [student_jmbag],
-            "Datum prijave": current_date,
-            "process_instance_id": row_data["id_instance"],
+            "datum_prijave": current_date,
+            "process_instance_id": row_data["id_instance"] or "",
             "frontend_url": row_data["_frontend_url"],
         }
 
         # Add to Alokacija table
         alokacija_response = client.create_row(
-            table_id=TABLES_MAP["alokacije"], data=alokacija_data
+            table_id=TABLES_MAP["Alokacija"], data=alokacija_data
         )
         if "data" in alokacija_response:
             response_data["alokacija_id"] = alokacija_response["data"]["id"]
@@ -143,7 +144,7 @@ async def prijava_preferencija(req):
     return web.Response(text=json.dumps(response_data), content_type="application/json")
 
 
-@routes.get("/student-preferencije-detailed/{JMBAG}")
+@routes.get("/api/student_preferencije/detailed/{JMBAG}")
 async def fetch_student_preferences_detailed(request):
     JMBAG = request.match_info.get("JMBAG", None)
 
@@ -156,9 +157,9 @@ async def fetch_student_preferences_detailed(request):
         )
 
     # First get the student preferences
-    table_id = TABLES_MAP["student-preferencije"]
+    table_id = TABLES_MAP["Student_preferencije"]
     row_id = client.get_row_id_by_attribute(
-        table_id, "JMBAG", JMBAG, br.Student_preferencije_Table_Mappings
+        table_id, "JMBAG", JMBAG, br.Student_preferencije_Mappings
     )
     if not row_id:
         return web.Response(
@@ -177,13 +178,13 @@ async def fetch_student_preferences_detailed(request):
         )
 
     # Fetch details for each Zadatak
-    for preference_key in ["Prvi odabir", "Drugi odabir", "Treći odabir"]:
+    for preference_key in ["Prvi_odabir", "Drugi_odabir", "Treci_odabir"]:
         preference = student_preferences["data"].get(preference_key)
         if preference:
             zadatak_id = preference[0]["id"] if preference else None
             if zadatak_id:
                 zadatak_data = client.get_row(
-                    TABLES_MAP["zadaci-za-odabir"], zadatak_id
+                    TABLES_MAP["Zadaci_za_odabir"], zadatak_id
                 )
                 preference[0]["details"] = (
                     zadatak_data["data"] if "data" in zadatak_data else None
@@ -195,12 +196,12 @@ async def fetch_student_preferences_detailed(request):
     )
 
 
-@routes.post("/alokacija")
+@routes.post("/api/alokacija")
 async def alokacija_studenta(request):
     # Parse incoming request data
     data = await request.json()
     student = data.get("Student")
-    alocirani_zadatak_id = data.get("Alocirani zadatak")
+    alocirani_zadatak_id = data.get("Alocirani_zadatak")
 
     if not student or not alocirani_zadatak_id:
         return web.Response(
@@ -209,21 +210,21 @@ async def alokacija_studenta(request):
             content_type="application/json",
         )
 
-    # Get the row_id of the student in the "alokacije" table
-    table_id = TABLES_MAP["alokacije"]
+    table_id = TABLES_MAP["Alokacija"]
     row_id = client.get_row_id_by_attribute(
-        table_id, "JMBAG", student[0], br.Alokacija_Table_Mappings
+        table_id, "JMBAG", student[0], br.Alokacija_Mappings
     )
 
     if not row_id:
         return web.Response(
-            text=json.dumps({"error": "Student not found in alokacije."}),
+            text=json.dumps(
+                {"error": f"Student ${student[0]} not found in Alokacija table."}
+            ),
             status=404,
             content_type="application/json",
         )
 
-    # Update the student's Alocirani zadatak
-    update_data = {"Alocirani zadatak": [alocirani_zadatak_id]}
+    update_data = {"Alocirani_zadatak": [alocirani_zadatak_id]}
     update_response = client.update_row(table_id, row_id, update_data)
 
     if "error" in update_response:
@@ -238,19 +239,21 @@ async def alokacija_studenta(request):
     )
 
 
-@routes.get("/alokacije/public")
+@routes.get("/api/alokacija/public")
 async def fetch_public_alokacije(request):
-    table_id = TABLES_MAP["alokacije"]
+    table_id = TABLES_MAP["Alokacija"]
 
     # Extract the JMBAG value from query parameters
     JMBAG = request.query.get("JMBAG", None)
+    print(JMBAG)
 
     def format_output(row):
-        # Assume you have a function or method to fetch zadatak_details using zadatak_id
         try:
-            zadatak_id = row.get("Zadatak ID", None)
+            zadatak_id = row.get("Alocirani_zadatak", None)
+            print("zadatak_id", zadatak_id)
+            zadatak_details = None
             zadatak_data = client.get_row(
-                TABLES_MAP["zadaci-za-odabir"], row["Alocirani zadatak"][0]["id"]
+                TABLES_MAP["Zadaci_za_odabir"], row["Alocirani_zadatak"][0]["id"]
             )
             if "data" in zadatak_data:
                 zadatak_details = zadatak_data["data"]
@@ -259,21 +262,21 @@ async def fetch_public_alokacije(request):
             zadatak_data = None
         return {
             "JMBAG": row["JMBAG"],
-            "Alocirani zadatak": zadatak_id,
-            "Opis zadatka": zadatak_details["Zadatak studenta"]
+            "Alocirani_zadatak": zadatak_id[0]["value"],
+            "opis_zadatka": zadatak_details["opis_zadatka"]
             if zadatak_details
             else None,
-            "poslodavac_kontakt": zadatak_details["Kontakt email"]
+            "poslodavac_email": zadatak_details["poslodavac_email"]
             if zadatak_details
             else None,
-            "prijavnica_ispunjena": row["Popunjena prijavnica"],
-            "predan_dnevnik_prakse": row["Predan dnevnik prakse"],
+            "popunjena_prijavnica": row["popunjena_prijavnica"],
+            "predan_dnevnik_prakse": row["predan_dnevnik_prakse"],
         }
 
     if JMBAG:
         # Get the student alokacija record ID using JMBAG
         row_id = client.get_row_id_by_attribute(
-            table_id, "JMBAG", JMBAG, br.Alokacija_Table_Mappings
+            table_id, "JMBAG", JMBAG, br.Alokacija_Mappings
         )
 
         if not row_id:  # If there's no matching row, return None
@@ -310,11 +313,11 @@ async def fetch_public_alokacije(request):
 
 
 # Generic GET route for fetching rows from a table
-@routes.get("/{table_name}")
+@routes.get("/api/{table_name}")
 async def fetch_table_rows(request):
     queryParams = []
 
-    table_name = request.match_info.get("table_name", None)
+    table_name = request.match_info.get("table_name", None).capitalize()
     if not table_name or table_name not in TABLES_MAP:
         return web.Response(
             text=json.dumps({"error": "Invalid table name."}),

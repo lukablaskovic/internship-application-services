@@ -25,6 +25,9 @@ routes = web.RouteTableDef()
 
 async def send_email(request, template_type):
     data = await request.json()
+    print(data)
+    # Ensure that all keys are lowercase
+    data = {key.lower(): value for key, value in data.items()}
 
     if request.query_string:
         query_dict = dict(request.query)
@@ -36,8 +39,6 @@ async def send_email(request, template_type):
         from_email=FROM_EMAIL,
         to_emails=query_dict["to"],
     )
-
-    print(message)
 
     if template_type == "student_after_approval":
         message.template_id = STUDENT_AFTER_APPROVAL_TEMPLATE
@@ -105,3 +106,6 @@ async def serve():
 if __name__ == "__main__":
     app = run()
     web.run_app(app, port=8081)
+
+# conda activate notification-service-backend
+# npx nodemon server.py
