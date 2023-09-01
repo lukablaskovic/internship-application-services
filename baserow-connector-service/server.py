@@ -31,6 +31,29 @@ async def add_new_student(req):
     print("BASEROW_POST_students\n", req)
 
     data = await req.json()
+
+    jmbag = data.get("JMBAG")
+    email = data.get("email")
+
+    existing_jmbag = client.get_row_id_by_attribute(
+        TABLES_MAP["Student"], "JMBAG", jmbag, br.Student_Mappings
+    )
+    existing_email = client.get_row_id_by_attribute(
+        TABLES_MAP["Student"], "email", email, br.Student_Mappings
+    )
+
+    if existing_jmbag or existing_email:
+        return web.Response(
+            text=json.dumps(
+                {
+                    "error": "Student s unesenim JMBAG-om ili emailom već postoji",
+                    "status_code": 400,
+                }
+            ),
+            content_type="application/json",
+            status=400,
+        )
+
     res = client.create_row(
         TABLES_MAP["Student"],
         {
