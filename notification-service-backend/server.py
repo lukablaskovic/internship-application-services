@@ -1,5 +1,6 @@
 import sendgrid
 import base64
+import os, sys
 from sendgrid.helpers.mail import (
     Mail,
     To,
@@ -13,6 +14,7 @@ from sendgrid.helpers.mail import (
 )
 import requests
 from aiohttp import web
+import aiohttp_cors
 from urllib import parse
 from env import *
 
@@ -87,6 +89,31 @@ async def send_plain_email(request):
     return web.json_response({"status": "OK"})
 
 
+@routes.get("/status")
+async def status_check(request):
+    """
+    Health check endpoint to monitor the status of the service.
+    Returns a 200 status code with a JSON payload if the service is running.
+    """
+    return web.json_response(
+        {
+            "microservice": "sendgrid-connector-notification-service",
+            "status": "✅ OK",
+            "message": "Service is running",
+        },
+        status=200,
+    )
+
+
+@routes.post("/restart")
+async def restart_server(request):
+    """
+    Handler to restart the server.
+    """
+    print("Restarting server...")
+    os.execv(sys.executable, ["python"] + sys.argv)
+
+
 app = None
 
 
@@ -95,6 +122,20 @@ def run():
 
     app = web.Application()
     app.add_routes(routes)
+    cors = aiohttp_cors.setup(
+        app,
+        defaults={
+            "*": aiohttp_cors.ResourceOptions(
+                allow_credentials=True,
+                expose_headers="*",
+                allow_headers="*",
+                allow_methods="*",
+            )
+        },
+    )
+
+    for route in list(app.router.routes()):
+        cors.add(route)
 
     return app
 

@@ -7,6 +7,7 @@ import datetime as dt
 import baserow as br
 import json
 from baserow import BaserowClient
+import os, sys
 
 routes = web.RouteTableDef()
 
@@ -372,6 +373,31 @@ async def fetch_table_rows(request):
             content_type="application/json",
         )
     return web.Response(text=json.dumps(rows), content_type="application/json")
+
+
+@routes.get("/status")
+async def status_check(request):
+    """
+    Health check endpoint to monitor the status of the service.
+    Returns a 200 status code with a JSON payload if the service is running.
+    """
+    return web.json_response(
+        {
+            "microservice": "baserow-connector-database-service",
+            "status": "✅ OK",
+            "message": "Service is running",
+        },
+        status=200,
+    )
+
+
+@routes.post("/restart")
+async def restart_server(request):
+    """
+    Handler to restart the server.
+    """
+    print("Restarting server...")
+    os.execv(sys.executable, ["python"] + sys.argv)
 
 
 def run():
