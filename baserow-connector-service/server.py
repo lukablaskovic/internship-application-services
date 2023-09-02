@@ -1,4 +1,5 @@
 from aiohttp import web
+import asyncio
 import requests
 from urllib import parse
 import os
@@ -8,6 +9,7 @@ import baserow as br
 import json
 from baserow import BaserowClient
 import os, sys
+from datetime import datetime
 
 routes = web.RouteTableDef()
 
@@ -272,38 +274,50 @@ async def fetch_public_alokacije(request):
     print(JMBAG)
 
     def format_output(row):
+        zadatak_details = None
         try:
             zadatak_id = row.get("Alocirani_zadatak", None)
             print("zadatak_id", zadatak_id)
-            zadatak_details = None
-            zadatak_data = client.get_row(
-                TABLES_MAP["Zadaci_za_odabir"], row["Alocirani_zadatak"][0]["id"]
-            )
-            if "data" in zadatak_data:
-                zadatak_details = zadatak_data["data"]
+
+            if zadatak_id and len(zadatak_id) > 0:
+                zadatak_data = client.get_row(
+                    TABLES_MAP["Zadaci_za_odabir"], zadatak_id[0]["id"]
+                )
+
+                if "data" in zadatak_data:
+                    zadatak_details = zadatak_data["data"]
+            else:
+                print("zadatak_id is None or empty")
+
         except Exception as e:
-            print(e)
-            zadatak_data = None
+            print(f"Error occurred: {e}")
+
         return {
-            "JMBAG": row["JMBAG"],
-            "Alocirani_zadatak": zadatak_id[0]["value"],
-            "opis_zadatka": zadatak_details["opis_zadatka"]
+            "JMBAG": row.get("JMBAG", ""),
+            "Alocirani_zadatak": zadatak_id[0]["value"]
+            if zadatak_id and len(zadatak_id) > 0
+            else None,
+            "opis_zadatka": zadatak_details.get("opis_zadatka")
             if zadatak_details
             else None,
-            "poslodavac_email": zadatak_details["poslodavac_email"]
+            "poslodavac_email": zadatak_details.get("poslodavac_email")
             if zadatak_details
             else None,
-            "popunjena_prijavnica": row["popunjena_prijavnica"],
-            "predan_dnevnik_prakse": row["predan_dnevnik_prakse"],
+            "poslodavac_naziv": zadatak_details.get("Poslodavac")[0]["value"]
+            if zadatak_details
+            else None,
+            "popunjena_prijavnica": row.get("popunjena_prijavnica", ""),
+            "predan_dnevnik_prakse": row.get("predan_dnevnik_prakse", ""),
         }
 
-    if JMBAG:
+    if JMBAG is not None:
+        print("JMBAG", JMBAG)
         # Get the student alokacija record ID using JMBAG
         row_id = client.get_row_id_by_attribute(
             table_id, "JMBAG", JMBAG, br.Alokacija_Mappings
         )
 
-        if not row_id:  # If there's no matching row, return None
+        if not row_id:
             return web.Response(text=json.dumps(None), content_type="application/json")
 
         # Fetch the specific student alokacija using row ID
@@ -328,6 +342,12 @@ async def fetch_public_alokacije(request):
             return web.Response(
                 text=json.dumps(alokacije_rows["error"]),
                 status=alokacije_rows["status_code"],
+                content_type="application/json",
+            )
+        if not alokacije_rows["data"]:
+            return web.Response(
+                text=json.dumps({"message": "Nema podataka."}),
+                status=404,
                 content_type="application/json",
             )
 
@@ -375,6 +395,102 @@ async def fetch_table_rows(request):
     return web.Response(text=json.dumps(rows), content_type="application/json")
 
 
+import uuid
+
+
+@routes.post("/api/file-upload")
+async def upload_to_baserow(request):
+    if "Content-Type" not in request.headers:
+        return {"error": "Content-Type header not present."}, 400
+
+    reader = await request.multipart()
+    field = await reader.next()
+    assert field.name == "file"
+
+    # Generate a unique filename using UUID
+    filename = f"{uuid.uuid4()}_{field.filename}"
+    file_content = await field.read(decode=True)
+
+    # Save the file to a temporary location first
+    with open(filename, "wb") as f:
+        f.write(file_content)
+
+    loop = asyncio.get_event_loop()
+    client = BaserowClient()
+    response = await loop.run_in_executor(None, client.upload_file, filename)
+
+    os.remove(filename)
+
+    # Return the response data and status
+    return response, 200
+
+
+async def store_file_in_baserow(
+    request, table_id, field_name, field_value, table_mappings, file_field_name
+):
+    # Upload the file to Baserow
+    response, status = await upload_to_baserow(request)
+    # Check if the upload was successful
+    if status != 200:
+        return web.json_response(response)
+
+    # Get the URL of the uploaded file
+    file_data = response["data"]
+    baserow_data = {
+        file_field_name: [
+            {
+                "url": file_data["url"],
+                "thumbnails": file_data["thumbnails"],
+                "name": file_data["name"],
+                "size": file_data["size"],
+                "mime_type": file_data["mime_type"],
+                "is_image": file_data["is_image"],
+                "image_width": file_data["image_width"],
+                "image_height": file_data["image_height"],
+                "uploaded_at": file_data["uploaded_at"],
+            }
+        ]
+    }
+
+    client = BaserowClient()
+    row_id = client.get_row_id_by_attribute(
+        table_id, field_name, field_value, table_mappings
+    )
+    print("row_id", row_id)
+    print(
+        "table_id",
+        table_id,
+    )
+    if not row_id:
+        return web.json_response({"error": "Row not found."}, status=404)
+
+    result = client.update_row(table_id, row_id, baserow_data)
+    print("result from store_file_in_baserow:", result)
+    return web.json_response(result)
+
+
+@routes.post("/api/upload/student-avatar/{JMBAG}")
+async def store_student_avatar(request):
+    jmbag = request.match_info.get("JMBAG")
+    print(jmbag)
+    return await store_file_in_baserow(
+        request, TABLES_MAP["Student"], "JMBAG", jmbag, br.Student_Mappings, "avatar"
+    )
+
+
+@routes.post("/api/upload/poslodavac-logo/{naziv}")
+async def store_poslodavac_logo(request):
+    naziv = request.match_info.get("naziv")
+    return await store_file_in_baserow(
+        request,
+        TABLES_MAP["Poslodavac"],
+        "naziv",
+        naziv,
+        br.Poslodavac_Mappings,
+        "logo",
+    )
+
+
 @routes.get("/status")
 async def status_check(request):
     """
@@ -383,9 +499,10 @@ async def status_check(request):
     """
     return web.json_response(
         {
-            "microservice": "baserow-connector-database-service",
-            "status": "✅ OK",
+            "microservice": "sendgrid-connector-notification-service",
+            "status": "OK",
             "message": "Service is running",
+            "status_check_timestamp": datetime.now().isoformat(),
         },
         status=200,
     )

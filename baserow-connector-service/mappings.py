@@ -24,6 +24,7 @@ Student_Mappings = {
     "JMBAG": "field_1255533",
     "ime": "field_1255534",
     "prezime": "field_1268623",
+    "avatar": "field_1300801",  # File
     "email": "field_1269574",
     "godina_studija": "field_1255549",  # 1_prijediplomski, 2_prijediplomski, 3_prijediplomski, 1_diplomski, 2_diplomski
     "Student_preferencije": "field_1255583",  # []
@@ -32,7 +33,11 @@ Student_Mappings = {
     "Alokacija": "field_1255616",
 }
 
-Poslodavac_Mappings = {"naziv": "field_1255536", "web": "field_1255565"}
+Poslodavac_Mappings = {
+    "naziv": "field_1255536",
+    "web": "field_1255565",
+    "logo": "field_1300796",
+}
 
 Zadaci_za_odabir_Mappings = {
     "id_zadatak": "field_1255543",

@@ -93,7 +93,10 @@ class BaserowClient:
 
     def update_row(self, table_id, row_id, data):
         url = self.get_table_url(table_id, row_id)
+        print("update_row_url", url)
         response = requests.patch(url, headers=self.headers, json=data)
+        print("update_row_response", response)
+
         return self.handle_response(response)
 
     def delete_row(self, table_id, row_id):
@@ -120,3 +123,33 @@ class BaserowClient:
                 "error": f"{attribute_name.capitalize()} not found.",
                 "status_code": 404,
             }
+
+    def upload_file(self, filepath):
+        """
+        Uploads a file to Baserow.
+
+        Args:
+            filepath (str): The path to the file you wish to upload.
+
+        Returns:
+            dict: A dictionary containing the result of the upload.
+        """
+        # Define the URL for the upload endpoint
+        upload_url = f"{self.base_url}user-files/upload-file/"
+
+        # Check if the file exists
+        if not os.path.exists(filepath):
+            return {
+                "error": f"File {filepath} does not exist.",
+                "status_code": 404,
+            }
+
+        # Open the file and make the request
+        with open(filepath, "rb") as file:
+            response = requests.post(
+                upload_url,
+                headers=AUTH_HEADER,
+                files={"file": file},
+            )
+        print(response)
+        return self.handle_response(response)

@@ -17,6 +17,7 @@ from aiohttp import web
 import aiohttp_cors
 from urllib import parse
 from env import *
+from datetime import datetime
 
 SG = sendgrid.SendGridAPIClient(API_KEY)
 # HEADER = {"Authorization": "Bearer "+API_KEY}
@@ -98,8 +99,9 @@ async def status_check(request):
     return web.json_response(
         {
             "microservice": "sendgrid-connector-notification-service",
-            "status": "✅ OK",
+            "status": "OK",
             "message": "Service is running",
+            "status_check_timestamp": datetime.now().isoformat(),
         },
         status=200,
     )
@@ -148,5 +150,5 @@ if __name__ == "__main__":
     app = run()
     web.run_app(app, port=8081)
 
-# conda activate notification-service-backend
+# conda activate sendgrid-connector-service
 # npx nodemon server.py
