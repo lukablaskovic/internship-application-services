@@ -1,6 +1,6 @@
 from aiohttp import web
 import asyncio
-import requests
+import uuid
 from urllib import parse
 import os
 import aiohttp_cors
@@ -393,9 +393,6 @@ async def fetch_table_rows(request):
             content_type="application/json",
         )
     return web.Response(text=json.dumps(rows), content_type="application/json")
-
-
-import uuid
 
 
 @routes.post("/api/file-upload")
