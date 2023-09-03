@@ -356,6 +356,44 @@ async def fetch_public_alokacije(request):
         return web.Response(text=json.dumps(results), content_type="application/json")
 
 
+@routes.post("/api/prijavnica")
+async def fill_application_form(request):
+    data = await request.json()
+
+    row_data = {
+        "Student": [data["Student"][0]],
+        "student_OIB": data["student_OIB"],
+        "student_broj_mobitela": data["student_broj_mobitela"],
+        "student_email": data["student_email"],
+        "mentor_ime": data["mentor_ime"],
+        "mentor_prezime": data["mentor_prezime"],
+        "mentor_email": data["mentor_email"],
+        "detaljan_opis_zadatka": data["detaljan_opis_zadatka"],
+        "dogovoreni_broj_sati": data["dogovoreni_broj_sati"],
+        "pocetak_prakse": data["pocetak_prakse"],
+        "kraj_prakse": data["kraj_prakse"],
+        "alokacija_potvrda": data["alokacija_potvrda"],
+        "kontakt_potvrda": data["kontakt_potvrda"],
+        "Poslodavac": [data["Poslodavac"]],
+        "mjesto_izvrsavanja": data["mjesto_izvrsavanja"],
+        "id_prijavnica": str(uuid.uuid4()),  # Generate a UUID for id_prijavnica
+    }
+
+    response = client.create_row(TABLES_MAP["Prijavnica"], row_data)
+
+    if "error" in response:
+        return web.Response(
+            text=json.dumps(response["error"]),
+            status=response["status_code"],
+            content_type="application/json",
+        )
+
+    return web.Response(
+        text=json.dumps({"id_prijavnica": row_data["id_prijavnica"]}),
+        content_type="application/json",
+    )
+
+
 # Generic GET route for fetching rows from a table
 @routes.get("/api/{table_name}")
 async def fetch_table_rows(request):

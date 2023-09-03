@@ -63,17 +63,23 @@ Student_preferencije_Mappings = {
     "napomena": "field_1255584",
 }
 Prijavnica_Mappings = {
-    "OIB": "field_1255558",
+    "id_prijavnica": "field_1255558",
+    "prijavnica_upload": "field_1255560",  # []
     "Student": "field_1255588",
     "student_broj_mobitela": "field_1255590",
-    "mentor_ime_prezime": "field_1255593",
-    "opis_zadatka": "field_1255594",
-    "datum_pocetka": "field_1255595",
-    "datum_zavrsetka": "field_1255596",
-    "alokacija_potvrđena": "field_1255597",
-    "kontaktiranje_tvrtke_potvrđeno": "field_1255598",
+    "detaljan_opis_zadatka": "field_1255594",
+    "pocetak_prakse": "field_1255595",
+    "kraj_prakse": "field_1255596",
+    "alokacija_potvrda": "field_1255597",
+    "kontakt_potvrda": "field_1255598",
     "student_email": "field_1255599",
     "Poslodavac": "field_1268742",
+    "mentor_ime": "field_1302579",
+    "mentor_prezime": "field_1302580",
+    "mjesto_izvrsavanja": "field_1302581",  # 1009029 - on-site, 1009030 - remote, 1009031 - hybrid
+    "mentor_email": "field_1302605",
+    "dogovoreni_broj_sati": "field_1302614",
+    "student_OIB": "field_1302666",
 }
 Dnevnik_prakse_Mappings = {
     "ID": "field_1255561",
