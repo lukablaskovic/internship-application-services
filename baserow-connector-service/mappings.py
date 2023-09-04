@@ -64,7 +64,7 @@ Student_preferencije_Mappings = {
 }
 Prijavnica_Mappings = {
     "id_prijavnica": "field_1255558",
-    "prijavnica_upload": "field_1255560",  # []
+    "pdf_attachment_url": "field_1255560",  # url
     "Student": "field_1255588",
     "student_broj_mobitela": "field_1255590",
     "detaljan_opis_zadatka": "field_1255594",
