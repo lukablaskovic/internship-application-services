@@ -49,9 +49,10 @@ async def send_email(request, template_type):
         message.template_id = STUDENT_AFTER_ALLOCATION_NOTIFICATION_TEMPLATE
     elif template_type == "poslodavac_after_allocation":
         message.template_id = POSLODAVAC_AFTER_ALLOCATION_NOTIFICATION_TEMPLATE
-    elif template_type == "student_pdf":
+    elif template_type == "student_potvrda_pdf":
         message.template_id = STUDENT_SEND_PDF_TEMPLATE
-
+    elif template_type == "mentor_potvrda_pdf":
+        message.template_id = MENTOR_SEND_PDF_TEMPLATE
     message.dynamic_template_data = DynamicTemplateData(data)
 
     if "attachment_url" in data:
