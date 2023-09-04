@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Download Page</title>
+</head>
+<body>
+    <h1>Click to Download PDF</h1>
+    
+    <!-- Create a button to trigger the download action -->
+    <button id="downloadButton">Download PDF</button>
+
+    <!-- Create an iframe to display the PDF -->
+    <iframe id="pdfViewer" src="data:application/pdf;base64,REPLACE_WITH_BASE64_ENCODED_PDF_DATA" width="100%" height="500px"></iframe>
+
+    <script>
+        // JavaScript code to handle the download action
+        const downloadButton = document.getElementById("downloadButton");
+        const pdfDataUri = "data:application/pdf;base64,REPLACE_WITH_BASE64_ENCODED_PDF_DATA"; // Replace with the actual PDF data
+
+        downloadButton.addEventListener("click", () => {
+            // Create a temporary anchor element
+            const anchor = document.createElement("a");
+            anchor.href = pdfDataUri;
+            anchor.download = "output.pdf"; // Specify the desired filename
+            anchor.style.display = "none";
+
+            // Append the anchor to the document and trigger a click event
+            document.body.appendChild(anchor);
+            anchor.click();
+
+            // Clean up the temporary anchor element
+            document.body.removeChild(anchor);
+        });
+    </script>
+</body>
+</html>

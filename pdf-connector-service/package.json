@@ -1,0 +1,24 @@
+{
+  "type": "module",
+  "name": "pdf-maker-service-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "atob": "^2.1.2",
+    "axios": "^1.5.0",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "form-data": "^4.0.0",
+    "playwright": "^1.37.1",
+    "stream": "0.0.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.37.1"
+  }
+}
