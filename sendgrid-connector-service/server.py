@@ -151,5 +151,4 @@ if __name__ == "__main__":
     app = run()
     web.run_app(app, port=8081)
 
-# conda activate sendgrid-connector-service
-# npx nodemon server.py
+# conda activate sendgrid-connector-service && npx nodemon server.py

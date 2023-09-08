@@ -360,7 +360,7 @@ async def fetch_public_alokacije(request):
 async def fill_application_form(request):
     data = await request.json()
 
-    row_data = {
+    prijavnica_data = {
         "Student": [data["Student"][0]],
         "student_OIB": data["student_OIB"],
         "student_broj_mobitela": data["student_broj_mobitela"],
@@ -379,18 +379,87 @@ async def fill_application_form(request):
         "id_prijavnica": str(uuid.uuid4()),  # Generate a UUID for id_prijavnica
     }
 
-    response = client.create_row(TABLES_MAP["Prijavnica"], row_data)
+    prijavnica_response = client.create_row(TABLES_MAP["Prijavnica"], prijavnica_data)
 
-    if "error" in response:
+    if "error" in prijavnica_response:
         return web.Response(
-            text=json.dumps(response["error"]),
-            status=response["status_code"],
+            text=json.dumps(prijavnica_response["error"]),
+            status=prijavnica_response["status_code"],
+            content_type="application/json",
+        )
+
+    dnevnik_data = {
+        "id_dnevnik_prakse": str(uuid.uuid4()),
+        "Student": [data["Student"][0]],
+        "id_prijavnica": [prijavnica_data["id_prijavnica"]],
+    }
+
+    dnevnik_response = client.create_row(TABLES_MAP["Dnevnik_prakse"], dnevnik_data)
+
+    if "error" in dnevnik_response:
+        return web.Response(
+            text=json.dumps(dnevnik_response["error"]),
+            status=dnevnik_response["status_code"],
             content_type="application/json",
         )
 
     return web.Response(
-        text=json.dumps({"id_prijavnica": row_data["id_prijavnica"]}),
+        text=json.dumps(
+            {
+                "id_prijavnica": prijavnica_data["id_prijavnica"],
+                "id_dnevnik_prakse": dnevnik_data["id_dnevnik_prakse"],
+            }
+        ),
         content_type="application/json",
+    )
+
+
+@routes.post("/api/dnevnik")
+async def update_dnevnik(request):
+    data = await request.json()
+
+    id_dnevnik_prakse = data.get("id_dnevnik_prakse")
+    nastavak_radnog_odnosa = data.get("nastavak_radnog_odnosa")
+    prijavljen_rok = data.get("prijavljen_rok")
+
+    if (
+        not id_dnevnik_prakse
+        or nastavak_radnog_odnosa is None
+        or prijavljen_rok is None
+    ):
+        return web.Response(
+            text=json.dumps({"error": "Incomplete data."}),
+            status=400,
+            content_type="application/json",
+        )
+
+    table_id = TABLES_MAP["Dnevnik_prakse"]
+    row_id = client.get_row_id_by_attribute(
+        table_id, "id_dnevnik_prakse", id_dnevnik_prakse, br.Dnevnik_prakse_Mappings
+    )
+
+    if not row_id:
+        return web.Response(
+            text=json.dumps({"error": "Dnevnik prakse not found."}),
+            status=404,
+            content_type="application/json",
+        )
+
+    update_data = {
+        "nastavak_radnog_odnosa": nastavak_radnog_odnosa,
+        "prijavljen_rok": prijavljen_rok,
+    }
+    update_response = client.update_row(table_id, row_id, update_data)
+
+    if "error" in update_response:
+        return web.Response(
+            text=json.dumps(update_response["error"]),
+            status=update_response["status_code"],
+            content_type="application/json",
+        )
+
+    return web.Response(
+        text=json.dumps(update_response), content_type="application/json"
     )
 
 
@@ -446,7 +515,6 @@ async def upload_to_baserow(request):
     filename = f"{uuid.uuid4()}_{field.filename}"
     file_content = await field.read(decode=True)
 
-    # Save the file to a temporary location first
     with open(filename, "wb") as f:
         f.write(file_content)
 
@@ -526,6 +594,32 @@ async def store_poslodavac_logo(request):
     )
 
 
+@routes.post("/api/upload/pdf-dnevnik/{id_dnevnik_prakse}")
+async def store_pdf_dnevnik_prakse(request):
+    id_dnevnik_prakse = request.match_info.get("id_dnevnik_prakse")
+    return await store_file_in_baserow(
+        request,
+        TABLES_MAP["Dnevnik_prakse"],
+        "id_dnevnik_prakse",
+        id_dnevnik_prakse,
+        br.Dnevnik_prakse_Mappings,
+        "dnevnik_prakse_upload",
+    )
+
+
+@routes.post("/api/upload/pdf-ispunjena-potvrda/{id_dnevnik_prakse}")
+async def store_pdf_ispunjena_potvrda(request):
+    id_dnevnik_prakse = request.match_info.get("id_dnevnik_prakse")
+    return await store_file_in_baserow(
+        request,
+        TABLES_MAP["Dnevnik_prakse"],
+        "id_dnevnik_prakse",
+        id_dnevnik_prakse,
+        br.Dnevnik_prakse_Mappings,
+        "pdf_ispunjene_potvrde_o_praksi",
+    )
+
+
 @routes.get("/status")
 async def status_check(request):
     """
@@ -583,5 +677,4 @@ if __name__ == "__main__":
     app = run()
     web.run_app(app, port=8080)
 
-# conda activate baserow-connector-service
-# npx nodemon server.py
+# conda activate baserow-connector-service && npx nodemon server.py

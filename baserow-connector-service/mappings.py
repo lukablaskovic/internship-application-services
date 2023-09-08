@@ -82,10 +82,11 @@ Prijavnica_Mappings = {
     "student_OIB": "field_1302666",
 }
 Dnevnik_prakse_Mappings = {
-    "ID": "field_1255561",
+    "id_dnevnik_prakse": "field_1255561",
     "Student": "field_1255562",
+    "id_prijavnica": "field_1311713",
     "dnevnik_prakse_upload": "field_1255563",
     "pdf_ispunjene_potvrde_o_praksi": "field_1255601",
-    "nastavak_rada": "field_1255602",
-    "studomat_prijavljen_rok": "field_1255603",
+    "nastavak_radnog_odnosa": "field_1255602",
+    "prijavljen_rok": "field_1255603",
 }

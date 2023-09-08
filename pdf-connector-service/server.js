@@ -41,3 +41,5 @@ app.use("/api/potvrda", express.static(path.join(__dirname, "potvrde")));
 app.listen(port, () => {
   console.log(`Listening on port ${port} ✅`);
 });
+
+// npx nodemon server.js
