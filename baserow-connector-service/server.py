@@ -170,7 +170,8 @@ async def register_assignments(req):
             table_id=TABLES_MAP["Alokacija"], data=alokacija_data
         )
         if "data" in alokacija_response:
-            response_data["alokacija_id"] = alokacija_response["data"]["id"]
+            print("Alokacija response", alokacija_response)
+            response_data["id_alokacija"] = alokacija_response["data"]["id_alokacija"]
         elif "error" in alokacija_response:
             return web.Response(
                 text=json.dumps(alokacija_response["error"]),
@@ -239,7 +240,7 @@ async def alokacija_studenta(request):
     data = await request.json()
     student = data.get("Student")
     alocirani_zadatak_id = data.get("Alocirani_zadatak")
-
+    status_zahtjeva = "evaluacija_u_tijeku"
     if not student or not alocirani_zadatak_id:
         return web.Response(
             text=json.dumps({"error": "Missing JMBAG or Alocirani zadatak"}),
@@ -261,8 +262,42 @@ async def alokacija_studenta(request):
             content_type="application/json",
         )
 
-    update_data = {"Alocirani_zadatak": [alocirani_zadatak_id]}
+    update_data = {
+        "Alocirani_zadatak": [alocirani_zadatak_id],
+        "status_zahtjeva": status_zahtjeva,
+    }
     update_response = client.update_row(table_id, row_id, update_data)
+
+    if "error" in update_response:
+        return web.Response(
+            text=json.dumps(update_response["error"]),
+            status=update_response["status_code"],
+            content_type="application/json",
+        )
+
+    return web.Response(
+        text=json.dumps(update_response), content_type="application/json"
+    )
+
+
+@routes.patch("/api/status_zahtjeva")
+async def update_status_zahtjeva(request):
+    data = await request.json()
+
+    table_id = TABLES_MAP["Alokacija"]
+
+    id_alokacija = data.get("id_alokacija")
+    novi_status_zahtjeva = data.get("status_zahtjeva")
+
+    row_id = client.get_row_id_by_attribute(
+        table_id, "id_alokacija", id_alokacija, br.Alokacija_Mappings
+    )
+    if not row_id:
+        return web.Response(text=json.dumps(None), content_type="application/json")
+
+    update_response = client.update_row(
+        table_id, row_id, {"status_zahtjeva": novi_status_zahtjeva}
+    )
 
     if "error" in update_response:
         return web.Response(
@@ -282,13 +317,12 @@ async def fetch_public_alokacije(request):
 
     # Extract the JMBAG value from query parameters
     JMBAG = request.query.get("JMBAG", None)
-    print(JMBAG)
 
     def format_output(row):
         zadatak_details = None
         try:
             zadatak_id = row.get("Alocirani_zadatak", None)
-            print("zadatak_id", zadatak_id)
+            id_alokacija = row.get("id_alokacija", None)
 
             if zadatak_id and len(zadatak_id) > 0:
                 zadatak_data = client.get_row(
@@ -305,6 +339,7 @@ async def fetch_public_alokacije(request):
 
         return {
             "JMBAG": row.get("JMBAG", ""),
+            "id_alokacija": id_alokacija,
             "Alocirani_zadatak": zadatak_id[0]["value"]
             if zadatak_id and len(zadatak_id) > 0
             else None,
