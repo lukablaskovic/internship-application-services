@@ -25,9 +25,9 @@ app.use(express.json());
 app.set("view engine", "ejs");
 
 // API Routes
-app.get("/api/status", (req, res) => {
+app.get("/status", (req, res) => {
   res.status(200).json({
-    microservice: "pdf-maker-service-node",
+    microservice: "pdf-generator-connector-service",
     status: "OK",
     message: "Service is running",
     status_check_timestamp: new Date().toISOString(),

@@ -8,11 +8,12 @@
 """
 
 Alokacija_Mappings = {
-    "JMBAG": "field_1255530",
+    "id_alokacija": "field_1255530",
+    "JMBAG": "field_1317410",
     "Student": "field_1255615",  # []
     "Alocirani_zadatak": "field_1255531",
     "popunjena_prijavnica": "field_1255532",
-    "status_zahtjeva": "field_1255564",
+    "status_zahtjeva": "field_1255564",  # evaluacija_u_tijeku - 1020091, student_prihvaćen - 1020088, student_odbijen - 1020089, student_odustao - 1020090, profesor_ponistio - 1020092
     "datum_prijave": "field_1255617",
     "odustao": "field_1255618",
     "process_instance_id": "field_1290411",
@@ -55,7 +56,8 @@ Zadaci_za_odabir_Mappings = {
     "Poslodavac": "field_1270742",
 }
 Student_preferencije_Mappings = {
-    "JMBAG": "field_1255546",
+    "id_preferencije": "field_1255546",
+    "JMBAG": "1317409",
     "Prvi_odabir": "field_1255547",
     "Drugi_odabir": "field_1255580",
     "Treci_odabir": "field_1255581",
@@ -66,6 +68,7 @@ Prijavnica_Mappings = {
     "id_prijavnica": "field_1255558",
     "pdf_attachment_url": "field_1255560",  # url
     "Student": "field_1255588",
+    "process_instance_id": "field_1317422",
     "student_broj_mobitela": "field_1255590",
     "detaljan_opis_zadatka": "field_1255594",
     "pocetak_prakse": "field_1255595",
@@ -84,9 +87,10 @@ Prijavnica_Mappings = {
 Dnevnik_prakse_Mappings = {
     "id_dnevnik_prakse": "field_1255561",
     "Student": "field_1255562",
+    "process_instance_id": "field_1317421",
     "id_prijavnica": "field_1311713",
     "dnevnik_prakse_upload": "field_1255563",
-    "pdf_ispunjene_potvrde_o_praksi": "field_1255601",
+    "ispunjena_potvrda_upload": "field_1255601",
     "nastavak_radnog_odnosa": "field_1255602",
     "prijavljen_rok": "field_1255603",
 }

@@ -45,6 +45,8 @@ async def send_email(request, template_type):
 
     if template_type == "student_after_approval":
         message.template_id = STUDENT_AFTER_APPROVAL_TEMPLATE
+    elif template_type == "student_after_refusal":
+        message.template_id = STUDENT_AFTER_REFUSAL_TEMPLATE
     elif template_type == "student_after_allocation":
         message.template_id = STUDENT_AFTER_ALLOCATION_NOTIFICATION_TEMPLATE
     elif template_type == "poslodavac_after_allocation":

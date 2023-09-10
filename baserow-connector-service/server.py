@@ -135,23 +135,34 @@ async def add_new_assignment(req):
 @routes.post("/api/student_preferencije")
 async def register_assignments(req):
     print("BASEROW_POST_register_assignments\n", req)
-    row_data = await req.json()
-    res = client.create_row(table_id=TABLES_MAP["Student_preferencije"], data=row_data)
+    data = await req.json()
+    preferencije_data = {
+        "id_preferencije": str(uuid.uuid4()),
+        "JMBAG": data.get("JMBAG"),
+        "Student": [data.get("JMBAG")],
+        "Prvi_odabir": data.get("Prvi_odabir"),
+        "Drugi_odabir": data.get("Drugi_odabir"),
+        "Treci_odabir": data.get("Treci_odabir"),
+        "napomena": data.get("napomena"),
+    }
+    preferencije_response = client.create_row(
+        table_id=TABLES_MAP["Student_preferencije"], data=preferencije_data
+    )
     response_data = {}
 
-    if "data" in res:
-        student_id = res["data"]["id"]
-        student_jmbag = row_data["JMBAG"]
+    if "data" in preferencije_response:
+        student_id = preferencije_response["data"]["id"]
         response_data["student_id"] = student_id
 
         current_date = dt.datetime.utcnow().isoformat() + "Z"
 
         alokacija_data = {
-            "JMBAG": student_jmbag,
-            "Student": [student_jmbag],
+            "id_alokacija": str(uuid.uuid4()),
+            "JMBAG": data.get("JMBAG"),
+            "Student": [data.get("JMBAG")],
             "datum_prijave": current_date,
-            "process_instance_id": row_data["id_instance"] or "",
-            "frontend_url": row_data["_frontend_url"],
+            "process_instance_id": data["id_instance"] or "",
+            "frontend_url": data["_frontend_url"],
         }
 
         # Add to Alokacija table
@@ -376,7 +387,8 @@ async def fill_application_form(request):
         "kontakt_potvrda": data["kontakt_potvrda"],
         "Poslodavac": [data["Poslodavac"]],
         "mjesto_izvrsavanja": data["mjesto_izvrsavanja"],
-        "id_prijavnica": str(uuid.uuid4()),  # Generate a UUID for id_prijavnica
+        "id_prijavnica": str(uuid.uuid4()),
+        "process_instance_id": data["id_instance"],
     }
 
     prijavnica_response = client.create_row(TABLES_MAP["Prijavnica"], prijavnica_data)
@@ -388,10 +400,37 @@ async def fill_application_form(request):
             content_type="application/json",
         )
 
+    table_id = TABLES_MAP["Alokacija"]
+    row_id = client.get_row_id_by_attribute(
+        table_id, "process_instance_id", data["id_instance"], br.Alokacija_Mappings
+    )
+
+    if not row_id:
+        return web.Response(
+            text=json.dumps(
+                {
+                    "error": f"Student ${data['id_instance'],} not found in Alokacija table."
+                }
+            ),
+            status=404,
+            content_type="application/json",
+        )
+
+    update_data = {"popunjena_prijavnica": True}
+    update_response = client.update_row(table_id, row_id, update_data)
+
+    if "error" in update_response:
+        return web.Response(
+            text=json.dumps(update_response["error"]),
+            status=update_response["status_code"],
+            content_type="application/json",
+        )
+
     dnevnik_data = {
         "id_dnevnik_prakse": str(uuid.uuid4()),
         "Student": [data["Student"][0]],
         "id_prijavnica": [prijavnica_data["id_prijavnica"]],
+        "process_instance_id": data["id_instance"],
     }
 
     dnevnik_response = client.create_row(TABLES_MAP["Dnevnik_prakse"], dnevnik_data)
@@ -458,6 +497,32 @@ async def update_dnevnik(request):
             content_type="application/json",
         )
 
+    table_id = TABLES_MAP["Alokacija"]
+    row_id = client.get_row_id_by_attribute(
+        table_id, "process_instance_id", data["id_instance"], br.Alokacija_Mappings
+    )
+
+    if not row_id:
+        return web.Response(
+            text=json.dumps(
+                {
+                    "error": f"Student ${data['id_instance'],} not found in Alokacija table."
+                }
+            ),
+            status=404,
+            content_type="application/json",
+        )
+
+    update_data = {"predan_dnevnik_prakse": True}
+    update_response = client.update_row(table_id, row_id, update_data)
+
+    if "error" in update_response:
+        return web.Response(
+            text=json.dumps(update_response["error"]),
+            status=update_response["status_code"],
+            content_type="application/json",
+        )
+
     return web.Response(
         text=json.dumps(update_response), content_type="application/json"
     )
@@ -502,6 +567,7 @@ async def fetch_table_rows(request):
     return web.Response(text=json.dumps(rows), content_type="application/json")
 
 
+# Store files on Baserow server
 @routes.post("/api/file-upload")
 async def upload_to_baserow(request):
     if "Content-Type" not in request.headers:
@@ -616,7 +682,7 @@ async def store_pdf_ispunjena_potvrda(request):
         "id_dnevnik_prakse",
         id_dnevnik_prakse,
         br.Dnevnik_prakse_Mappings,
-        "pdf_ispunjene_potvrde_o_praksi",
+        "ispunjena_potvrda_upload",
     )
 
 
