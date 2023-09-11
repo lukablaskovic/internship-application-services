@@ -352,6 +352,7 @@ async def fetch_public_alokacije(request):
             "poslodavac_naziv": zadatak_details.get("Poslodavac")[0]["value"]
             if zadatak_details
             else None,
+            "status_zahtjeva": row.get("status_zahtjeva", ""),
             "popunjena_prijavnica": row.get("popunjena_prijavnica", ""),
             "predan_dnevnik_prakse": row.get("predan_dnevnik_prakse", ""),
         }
