@@ -42,7 +42,10 @@ Poslodavac_Mappings = {
 
 Zadaci_za_odabir_Mappings = {
     "id_zadatak": "field_1255543",
+    "voditelj_odobrio": "field_1392122",
     "poslodavac_email": "field_1255544",
+    "broj_studenata": "field_1369531",
+    "dostupno_mjesta": "field_1388917",
     "preferirane_tehnologije": "field_1255550",
     "preferencije_za_studenta": "field_1255551",
     "potrebno_imati": "field_1255552",
@@ -54,6 +57,8 @@ Zadaci_za_odabir_Mappings = {
     "selekcija": "field_1255576",
     "proces_selekcije": "field_1255577",
     "Poslodavac": "field_1270742",
+    "total_alokacija": "field_1388926",
+    "statusi_alokacija": "field_1388929",
 }
 Student_preferencije_Mappings = {
     "id_preferencije": "field_1255546",

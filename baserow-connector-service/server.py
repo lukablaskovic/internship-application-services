@@ -93,7 +93,9 @@ async def add_new_assignment(req):
     new_row_data = dict(
         {
             "Poslodavac": data.get("Poslodavac"),
+            "voditelj_odobrio": "u razradi",
             "poslodavac_email": data.get("poslodavac_email"),
+            "broj_studenata": data.get("broj_studenata"),
             "opis_zadatka": data.get("opis_zadatka"),
             "preferirane_tehnologije": data.get("preferirane_tehnologije"),
             "potrebno_imati": data.get("potrebno_imati"),
@@ -115,9 +117,9 @@ async def add_new_assignment(req):
     if "data" in creation_response:
         new_row_id = creation_response["data"]["id"]
 
-        poduzece_value = data.get("poduzece")[0] if data.get("poduzece") else ""
+        Poslodavac_value = data.get("Poslodavac")[0] if data.get("Poslodavac") else ""
 
-        formatted_id = f"Zadatak {new_row_id} - {poduzece_value}"
+        formatted_id = f"Zadatak {new_row_id} - {Poslodavac_value}"
         update_response = client.update_row(
             TABLES_MAP["Zadaci_za_odabir"], new_row_id, {"id_zadatak": formatted_id}
         )
@@ -130,6 +132,39 @@ async def add_new_assignment(req):
         return web.Response(
             text=json.dumps(creation_response), content_type="application/json"
         )
+
+
+@routes.patch("/api/zadaci_za_odabir/odobrenje")
+async def update_voditelj_odobrio(req):
+    data = await req.json()
+
+    voditelj_odobrio = data.get("voditelj_odobrio")
+    if voditelj_odobrio is None:
+        return web.Response(
+            status=400, text="Missing 'voditelj_odobrio' in request body."
+        )
+
+    id_zadatak = data.get("id_zadatak")
+    if not id_zadatak:
+        return web.Response(status=400, text="Missing 'id_zadatak' in request body.")
+
+    row_id = client.get_row_id_by_attribute(
+        TABLES_MAP["Zadaci_za_odabir"],
+        "id_zadatak",
+        id_zadatak,
+        br.Zadaci_za_odabir_Mappings,
+    )
+
+    try:
+        client.update_row(
+            TABLES_MAP["Zadaci_za_odabir"],
+            row_id,
+            {"voditelj_odobrio": voditelj_odobrio},
+        )
+        return web.Response(status=200, text="Updated successfully.")
+
+    except Exception as e:
+        return web.Response(status=402, text=f"Error: {e}")
 
 
 @routes.post("/api/student_preferencije")
