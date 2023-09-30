@@ -1,4 +1,4 @@
-from aiohttp import web
+import aiohttp
 import asyncio
 import uuid
 from urllib import parse
@@ -11,7 +11,7 @@ from baserow import BaserowClient
 import os, sys
 from datetime import datetime
 
-routes = web.RouteTableDef()
+routes = aiohttp.web.RouteTableDef()
 
 app = None
 
@@ -46,7 +46,7 @@ async def add_new_student(req):
     )
 
     if existing_jmbag or existing_email:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(
                 {
                     "error": "Student s unesenim JMBAG-om ili emailom već postoji",
@@ -67,7 +67,7 @@ async def add_new_student(req):
             "godina_studija": data.get("godina_studija"),
         },
     )
-    return web.Response(text=json.dumps(res), content_type="application/json")
+    return aiohttp.web.Response(text=json.dumps(res), content_type="application/json")
 
 
 @routes.delete("/api/student/email/{value}")
@@ -76,7 +76,7 @@ async def delete_student(req):
     value = req.match_info.get("value", None)
 
     if not value:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps({"error": "Invalid email."}),
             status=400,
             content_type="application/json",
@@ -84,7 +84,7 @@ async def delete_student(req):
     res = client.delete_row_by_attribute(
         TABLES_MAP["Student"], "email", value, br.Student_Mappings
     )
-    return web.Response(text=json.dumps(res), content_type="application/json")
+    return aiohttp.web.Response(text=json.dumps(res), content_type="application/json")
 
 
 @routes.post("/api/zadaci_za_odabir")
@@ -107,7 +107,7 @@ async def add_new_assignment(req):
         if "data" in company_creation_response:
             existing_company_id = company_creation_response["data"]["id"]
         else:
-            return web.Response(
+            return aiohttp.web.Response(
                 text=json.dumps(company_creation_response),
                 content_type="application/json",
             )
@@ -147,12 +147,12 @@ async def add_new_assignment(req):
             TABLES_MAP["Zadaci_za_odabir"], new_row_id, {"id_zadatak": formatted_id}
         )
 
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(update_response), content_type="application/json"
         )
 
     else:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(creation_response), content_type="application/json"
         )
 
@@ -167,7 +167,7 @@ async def add_new_company(req):
         "Poslodavac", "naziv", company_name, br.Poslodavac_Mappings
     )
     if existing_company_id:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps({"error": "Company already exists"}),
             content_type="application/json",
         )
@@ -178,9 +178,70 @@ async def add_new_company(req):
         table_id=TABLES_MAP["Poslodavac"], data=new_company_data
     )
 
-    return web.Response(
+    return aiohttp.web.Response(
         text=json.dumps(creation_response), content_type="application/json"
     )
+
+
+@routes.patch("/api/poslodavac/update")
+async def update_company(request):
+    try:
+        data = await request.json()
+
+        # Extract the naziv and other fields from the data
+        naziv = data.get("naziv")
+        web = data.get("web")
+        direktor = data.get("direktor")
+        maticni_broj = data.get("maticni_broj")
+        OIB = data.get("OIB")
+        adresa = data.get("adresa")
+
+        # Validate that naziv is provided
+        if not naziv:
+            return aiohttp.web.Response(
+                text=json.dumps({"error": "naziv is required."}),
+                status=400,
+                content_type="application/json",
+            )
+
+        # Search for the company with the given naziv in TABLES_MAP["Poslodavac"]
+        table_id = TABLES_MAP["Poslodavac"]
+        row_id = client.get_row_id_by_attribute(
+            table_id, "naziv", naziv, br.Poslodavac_Mappings
+        )
+
+        # If company not found, return an error
+        if not row_id:
+            return aiohttp.web.Response(
+                text=json.dumps({"error": "Company not found."}),
+                status=404,
+                content_type="application/json",
+            )
+
+        # Update the company's fields with the provided data
+        client.update_row(
+            table_id,
+            row_id,
+            {
+                "web": web,
+                "direktor": direktor,
+                "maticni_broj": maticni_broj,
+                "OIB": OIB,
+                "adresa": adresa,
+            },
+        )
+
+        return aiohttp.web.Response(
+            text=json.dumps({"message": "Company updated successfully."}),
+            status=200,
+            content_type="application/json",
+        )
+    except Exception as e:
+        return aiohttp.web.Response(
+            text=json.dumps({"error": str(e)}),
+            status=500,
+            content_type="application/json",
+        )
 
 
 @routes.patch("/api/zadaci_za_odabir/odobrenje")
@@ -189,13 +250,15 @@ async def update_voditelj_odobrio(req):
 
     voditelj_odobrio = data.get("voditelj_odobrio")
     if voditelj_odobrio is None:
-        return web.Response(
+        return aiohttp.web.Response(
             status=400, text="Missing 'voditelj_odobrio' in request body."
         )
 
     id_zadatak = data.get("id_zadatak")
     if not id_zadatak:
-        return web.Response(status=400, text="Missing 'id_zadatak' in request body.")
+        return aiohttp.web.Response(
+            status=400, text="Missing 'id_zadatak' in request body."
+        )
 
     row_id = client.get_row_id_by_attribute(
         TABLES_MAP["Zadaci_za_odabir"],
@@ -210,10 +273,10 @@ async def update_voditelj_odobrio(req):
             row_id,
             {"voditelj_odobrio": voditelj_odobrio},
         )
-        return web.Response(status=200, text="Updated successfully.")
+        return aiohttp.web.Response(status=200, text="Updated successfully.")
 
     except Exception as e:
-        return web.Response(status=402, text=f"Error: {e}")
+        return aiohttp.web.Response(status=402, text=f"Error: {e}")
 
 
 @routes.post("/api/student_preferencije")
@@ -257,13 +320,15 @@ async def register_assignments(req):
             print("Alokacija response", alokacija_response)
             response_data["id_alokacija"] = alokacija_response["data"]["id_alokacija"]
         elif "error" in alokacija_response:
-            return web.Response(
+            return aiohttp.web.Response(
                 text=json.dumps(alokacija_response["error"]),
                 status=alokacija_response["status_code"],
                 content_type="application/json",
             )
 
-    return web.Response(text=json.dumps(response_data), content_type="application/json")
+    return aiohttp.web.Response(
+        text=json.dumps(response_data), content_type="application/json"
+    )
 
 
 @routes.get("/api/student_preferencije/detailed/{JMBAG}")
@@ -272,7 +337,7 @@ async def fetch_student_preferences_detailed(request):
 
     # If JMBAG is missing, return error
     if not JMBAG:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps({"error": "Missing JMBAG."}),
             status=400,
             content_type="application/json",
@@ -284,7 +349,7 @@ async def fetch_student_preferences_detailed(request):
         table_id, "JMBAG", JMBAG, br.Student_preferencije_Mappings
     )
     if not row_id:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps({"error": "Student not found."}),
             status=404,
             content_type="application/json",
@@ -293,7 +358,7 @@ async def fetch_student_preferences_detailed(request):
     student_preferences = client.get_row(table_id, row_id)
 
     if "error" in student_preferences:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(student_preferences),
             status=student_preferences["status_code"],
             content_type="application/json",
@@ -312,7 +377,7 @@ async def fetch_student_preferences_detailed(request):
                     zadatak_data["data"] if "data" in zadatak_data else None
                 )
 
-    return web.Response(
+    return aiohttp.web.Response(
         text=json.dumps(student_preferences),
         content_type="application/json",
     )
@@ -326,7 +391,7 @@ async def alokacija_studenta(request):
     alocirani_zadatak_id = data.get("Alocirani_zadatak")
     status_zahtjeva = "evaluacija_u_tijeku"
     if not student or not alocirani_zadatak_id:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps({"error": "Missing JMBAG or Alocirani zadatak"}),
             status=400,
             content_type="application/json",
@@ -338,7 +403,7 @@ async def alokacija_studenta(request):
     )
 
     if not row_id:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(
                 {"error": f"Student ${student[0]} not found in Alokacija table."}
             ),
@@ -353,13 +418,13 @@ async def alokacija_studenta(request):
     update_response = client.update_row(table_id, row_id, update_data)
 
     if "error" in update_response:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(update_response["error"]),
             status=update_response["status_code"],
             content_type="application/json",
         )
 
-    return web.Response(
+    return aiohttp.web.Response(
         text=json.dumps(update_response), content_type="application/json"
     )
 
@@ -377,20 +442,22 @@ async def update_status_zahtjeva(request):
         table_id, "id_alokacija", id_alokacija, br.Alokacija_Mappings
     )
     if not row_id:
-        return web.Response(text=json.dumps(None), content_type="application/json")
+        return aiohttp.web.Response(
+            text=json.dumps(None), content_type="application/json"
+        )
 
     update_response = client.update_row(
         table_id, row_id, {"status_zahtjeva": novi_status_zahtjeva}
     )
 
     if "error" in update_response:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(update_response["error"]),
             status=update_response["status_code"],
             content_type="application/json",
         )
 
-    return web.Response(
+    return aiohttp.web.Response(
         text=json.dumps(update_response), content_type="application/json"
     )
 
@@ -449,19 +516,21 @@ async def fetch_public_alokacije(request):
         )
 
         if not row_id:
-            return web.Response(text=json.dumps(None), content_type="application/json")
+            return aiohttp.web.Response(
+                text=json.dumps(None), content_type="application/json"
+            )
 
         # Fetch the specific student alokacija using row ID
         alokacija_data = client.get_row(table_id, row_id)
         if "error" in alokacija_data:
-            return web.Response(
+            return aiohttp.web.Response(
                 text=json.dumps(alokacija_data["error"]),
                 status=alokacija_data["status_code"],
                 content_type="application/json",
             )
 
         # Return the specific student alokacija
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(format_output(alokacija_data["data"])),
             content_type="application/json",
         )
@@ -470,13 +539,13 @@ async def fetch_public_alokacije(request):
         # If no JMBAG was provided, fetch all rows
         alokacije_rows = client.get_table_rows(table_id)
         if "error" in alokacije_rows:
-            return web.Response(
+            return aiohttp.web.Response(
                 text=json.dumps(alokacije_rows["error"]),
                 status=alokacije_rows["status_code"],
                 content_type="application/json",
             )
         if not alokacije_rows["data"]:
-            return web.Response(
+            return aiohttp.web.Response(
                 text=json.dumps({"message": "Nema podataka."}),
                 status=404,
                 content_type="application/json",
@@ -484,7 +553,9 @@ async def fetch_public_alokacije(request):
 
         # Format and return all alokacije
         results = [format_output(row) for row in alokacije_rows["data"]["results"]]
-        return web.Response(text=json.dumps(results), content_type="application/json")
+        return aiohttp.web.Response(
+            text=json.dumps(results), content_type="application/json"
+        )
 
 
 @routes.post("/api/prijavnica")
@@ -514,7 +585,7 @@ async def fill_application_form(request):
     prijavnica_response = client.create_row(TABLES_MAP["Prijavnica"], prijavnica_data)
 
     if "error" in prijavnica_response:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(prijavnica_response["error"]),
             status=prijavnica_response["status_code"],
             content_type="application/json",
@@ -526,7 +597,7 @@ async def fill_application_form(request):
     )
 
     if not row_id:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(
                 {
                     "error": f"Student ${data['id_instance'],} not found in Alokacija table."
@@ -540,7 +611,7 @@ async def fill_application_form(request):
     update_response = client.update_row(table_id, row_id, update_data)
 
     if "error" in update_response:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(update_response["error"]),
             status=update_response["status_code"],
             content_type="application/json",
@@ -556,13 +627,13 @@ async def fill_application_form(request):
     dnevnik_response = client.create_row(TABLES_MAP["Dnevnik_prakse"], dnevnik_data)
 
     if "error" in dnevnik_response:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(dnevnik_response["error"]),
             status=dnevnik_response["status_code"],
             content_type="application/json",
         )
 
-    return web.Response(
+    return aiohttp.web.Response(
         text=json.dumps(
             {
                 "id_prijavnica": prijavnica_data["id_prijavnica"],
@@ -586,7 +657,7 @@ async def update_dnevnik(request):
         or nastavak_radnog_odnosa is None
         or prijavljen_rok is None
     ):
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps({"error": "Incomplete data."}),
             status=400,
             content_type="application/json",
@@ -598,7 +669,7 @@ async def update_dnevnik(request):
     )
 
     if not row_id:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps({"error": "Dnevnik prakse not found."}),
             status=404,
             content_type="application/json",
@@ -611,7 +682,7 @@ async def update_dnevnik(request):
     update_response = client.update_row(table_id, row_id, update_data)
 
     if "error" in update_response:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(update_response["error"]),
             status=update_response["status_code"],
             content_type="application/json",
@@ -623,7 +694,7 @@ async def update_dnevnik(request):
     )
 
     if not row_id:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(
                 {
                     "error": f"Student ${data['id_instance'],} not found in Alokacija table."
@@ -637,13 +708,13 @@ async def update_dnevnik(request):
     update_response = client.update_row(table_id, row_id, update_data)
 
     if "error" in update_response:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(update_response["error"]),
             status=update_response["status_code"],
             content_type="application/json",
         )
 
-    return web.Response(
+    return aiohttp.web.Response(
         text=json.dumps(update_response), content_type="application/json"
     )
 
@@ -655,7 +726,7 @@ async def fetch_table_rows(request):
 
     table_name = request.match_info.get("table_name", None).capitalize()
     if not table_name or table_name not in TABLES_MAP:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps({"error": "Invalid table name."}),
             status=400,
             content_type="application/json",
@@ -670,21 +741,23 @@ async def fetch_table_rows(request):
     if row_id:
         row_data = client.get_row(table_id, row_id)
         if "error" in row_data:
-            return web.Response(
+            return aiohttp.web.Response(
                 text=json.dumps(row_data["error"]),
                 status=row_data["status_code"],
                 content_type="application/json",
             )
-        return web.Response(text=json.dumps(row_data), content_type="application/json")
+        return aiohttp.web.Response(
+            text=json.dumps(row_data), content_type="application/json"
+        )
 
     rows = client.get_table_rows(table_id, queryParams)
     if "error" in rows:
-        return web.Response(
+        return aiohttp.web.Response(
             text=json.dumps(rows["error"]),
             status=rows["status_code"],
             content_type="application/json",
         )
-    return web.Response(text=json.dumps(rows), content_type="application/json")
+    return aiohttp.web.Response(text=json.dumps(rows), content_type="application/json")
 
 
 # Store files on Baserow server
@@ -721,7 +794,7 @@ async def store_file_in_baserow(
     response, status = await upload_to_baserow(request)
     # Check if the upload was successful
     if status != 200:
-        return web.json_response(response)
+        return aiohttp.web.json_response(response)
 
     # Get the URL of the uploaded file
     file_data = response["data"]
@@ -751,11 +824,11 @@ async def store_file_in_baserow(
         table_id,
     )
     if not row_id:
-        return web.json_response({"error": "Row not found."}, status=404)
+        return aiohttp.web.json_response({"error": "Row not found."}, status=404)
 
     result = client.update_row(table_id, row_id, baserow_data)
     print("result from store_file_in_baserow:", result)
-    return web.json_response(result)
+    return aiohttp.web.json_response(result)
 
 
 @routes.post("/api/upload/student-avatar/{JMBAG}")
@@ -812,7 +885,7 @@ async def status_check(request):
     Health check endpoint to monitor the status of the service.
     Returns a 200 status code with a JSON payload if the service is running.
     """
-    return web.json_response(
+    return aiohttp.web.json_response(
         {
             "microservice": "sendgrid-connector-notification-service",
             "status": "OK",
@@ -835,7 +908,7 @@ async def restart_server(request):
 def run():
     global app
 
-    app = web.Application()
+    app = aiohttp.web.Application()
     app.add_routes(routes)
     cors = aiohttp_cors.setup(
         app,
@@ -861,6 +934,6 @@ async def serve():
 
 if __name__ == "__main__":
     app = run()
-    web.run_app(app, port=8080)
+    aiohttp.web.run_app(app, port=8080)
 
 # conda activate baserow-connector-service && npx nodemon server.py
