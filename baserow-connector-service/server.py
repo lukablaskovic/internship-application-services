@@ -90,6 +90,28 @@ async def delete_student(req):
 @routes.post("/api/zadaci_za_odabir")
 async def add_new_assignment(req):
     data = await req.json()
+    # Check if the company exists in the 'Poslodavac' table
+    company_name = data.get("Poslodavac")[0]
+    print("company_name", company_name)
+    existing_company_id = client.get_row_id_by_attribute(
+        TABLES_MAP["Poslodavac"], "naziv", company_name, br.Poslodavac_Mappings
+    )
+    print("existing_company_id", existing_company_id)
+
+    # If company doesn't exist, create a new entry in the 'Poslodavac' table
+    if not existing_company_id:
+        new_company_data = {"naziv": company_name}
+        company_creation_response = client.create_row(
+            table_id=TABLES_MAP["Poslodavac"], data=new_company_data
+        )
+        if "data" in company_creation_response:
+            existing_company_id = company_creation_response["data"]["id"]
+        else:
+            return web.Response(
+                text=json.dumps(company_creation_response),
+                content_type="application/json",
+            )
+
     new_row_data = dict(
         {
             "Poslodavac": data.get("Poslodavac"),
@@ -132,6 +154,32 @@ async def add_new_assignment(req):
         return web.Response(
             text=json.dumps(creation_response), content_type="application/json"
         )
+
+
+@routes.post("/api/poslodavac")
+async def add_new_company(req):
+    data = await req.json()
+    company_name = data.get("naziv")
+
+    # Check if the company already exists
+    existing_company_id = client.get_row_id_by_attribute(
+        "Poslodavac", "naziv", company_name, br.Poslodavac_Mappings
+    )
+    if existing_company_id:
+        return web.Response(
+            text=json.dumps({"error": "Company already exists"}),
+            content_type="application/json",
+        )
+
+    # If company doesn't exist, create a new entry
+    new_company_data = {"naziv": company_name}
+    creation_response = client.create_row(
+        table_id=TABLES_MAP["Poslodavac"], data=new_company_data
+    )
+
+    return web.Response(
+        text=json.dumps(creation_response), content_type="application/json"
+    )
 
 
 @routes.patch("/api/zadaci_za_odabir/odobrenje")

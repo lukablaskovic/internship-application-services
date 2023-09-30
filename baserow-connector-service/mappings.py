@@ -37,6 +37,10 @@ Student_Mappings = {
 Poslodavac_Mappings = {
     "naziv": "field_1255536",
     "web": "field_1255565",
+    "direktor": "field_1388465",
+    "maticni_broj": "field_1368408",
+    "OIB": "field_1368349",
+    "adresa": "field_1368407",
     "logo": "field_1300796",
 }
 
