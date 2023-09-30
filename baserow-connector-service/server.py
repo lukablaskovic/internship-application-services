@@ -111,7 +111,6 @@ async def add_new_assignment(req):
                 text=json.dumps(company_creation_response),
                 content_type="application/json",
             )
-
     new_row_data = dict(
         {
             "Poslodavac": data.get("Poslodavac"),
@@ -129,12 +128,14 @@ async def add_new_assignment(req):
             ),
             "angazman_fipu": data.get("angazman_fipu"),
             "napomena": data.get("napomena"),
-            "seleckija": data.get("selekcija"),
+            "selekcija": data.get("selekcija"),
             "proces_selekcije": data.get("proces_selekcije"),
         },
     )
 
     creation_response = client.create_row(TABLES_MAP["Zadaci_za_odabir"], new_row_data)
+
+    print("creation_response", creation_response)
 
     if "data" in creation_response:
         new_row_id = creation_response["data"]["id"]
