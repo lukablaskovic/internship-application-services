@@ -1,0 +1,79 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "baserow-connector-service",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/K",
+                "cd baserow-connector-service && conda activate baserow-connector-service && npx nodemon server.py"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "build"
+            }
+        },
+        {
+            "label": "pdf-connector-service",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/K",
+                "cd pdf-connector-service && npx nodemon server.js"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "build"
+            }
+        },
+        {
+            "label": "sendgrid-connector-service",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/K",
+                "cd sendgrid-connector-service && conda activate sendgrid-connector-service && npx nodemon server.py"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "build"
+            }
+        },
+        {
+            "label": "Run All Services",
+            "dependsOn": [
+                "baserow-connector-service",
+                "pdf-connector-service",
+                "sendgrid-connector-service"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "build"
+            }
+        }
+    ]
+}
