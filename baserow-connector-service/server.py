@@ -11,6 +11,10 @@ from baserow import BaserowClient
 import os, sys
 from datetime import datetime
 
+from env import BUGSNAG
+
+import bugsnag
+
 routes = aiohttp.web.RouteTableDef()
 
 app = None
@@ -905,10 +909,29 @@ async def restart_server(request):
     os.execv(sys.executable, ["python"] + sys.argv)
 
 
+project_root = os.path.dirname(os.path.abspath(__file__))
+bugsnag.configure(
+    api_key=BUGSNAG,
+    project_root=project_root,
+)
+
+
+async def bugsnag_middleware(app, handler):
+    async def middleware_handler(request):
+        try:
+            response = await handler(request)
+            return response
+        except Exception as e:
+            bugsnag.notify(e)
+            raise e
+
+    return middleware_handler
+
+
 def run():
     global app
 
-    app = aiohttp.web.Application()
+    app = aiohttp.web.Application(middlewares=[bugsnag_middleware])
     app.add_routes(routes)
     cors = aiohttp_cors.setup(
         app,

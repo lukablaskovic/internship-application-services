@@ -1,4 +1,6 @@
 import sendgrid
+import bugsnag
+
 import base64
 import os, sys
 from sendgrid.helpers.mail import (
@@ -18,6 +20,8 @@ import aiohttp_cors
 from urllib import parse
 from env import *
 from datetime import datetime
+
+from env import BUGSNAG
 
 SG = sendgrid.SendGridAPIClient(API_KEY)
 # HEADER = {"Authorization": "Bearer "+API_KEY}
@@ -123,11 +127,29 @@ async def restart_server(request):
 
 app = None
 
+project_root = os.path.dirname(os.path.abspath(__file__))
+bugsnag.configure(
+    api_key=BUGSNAG,
+    project_root=project_root,
+)
+
+
+async def bugsnag_middleware(app, handler):
+    async def middleware_handler(request):
+        try:
+            response = await handler(request)
+            return response
+        except Exception as e:
+            bugsnag.notify(e)
+            raise e
+
+    return middleware_handler
+
 
 def run():
     global app
 
-    app = web.Application()
+    app = web.Application(middlewares=[bugsnag_middleware])
     app.add_routes(routes)
     cors = aiohttp_cors.setup(
         app,

@@ -2,6 +2,7 @@ aiohttp==3.7.4.post0
 aiohttp-cors==0.7.0
 async-timeout==3.0.1
 attrs==21.2.0
+bugsnag==4.6.0
 certifi==2023.7.22
 chardet==4.0.0
 charset-normalizer==3.2.0
@@ -13,4 +14,5 @@ sendgrid==6.8.0
 starkbank-ecdsa==1.1.1
 typing-extensions==3.10.0.0
 urllib3==2.0.4
+WebOb==1.8.7
 yarl==1.6.3
