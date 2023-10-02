@@ -9,6 +9,7 @@
 
 Alokacija_Mappings = {
     "id_alokacija": "field_1255530",
+    "Student_preferencije": "field_1396529",
     "JMBAG": "field_1317410",
     "Student": "field_1255615",  # []
     "Alocirani_zadatak": "field_1255531",
@@ -72,6 +73,7 @@ Student_preferencije_Mappings = {
     "Treci_odabir": "field_1255581",
     "Student": "field_1255582",  # []
     "napomena": "field_1255584",
+    "Alokacija": "field_1396530",
 }
 Prijavnica_Mappings = {
     "id_prijavnica": "field_1255558",

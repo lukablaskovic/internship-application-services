@@ -303,13 +303,16 @@ async def register_assignments(req):
 
     if "data" in preferencije_response:
         student_id = preferencije_response["data"]["id"]
+        Student_preferencije = preferencije_response["data"]["id_preferencije"]
         response_data["student_id"] = student_id
+        response_data["id_preferencije"] = Student_preferencije
 
         current_date = dt.datetime.utcnow().isoformat() + "Z"
 
         alokacija_data = {
             "id_alokacija": str(uuid.uuid4()),
             "JMBAG": data.get("JMBAG"),
+            "Student_preferencije": [Student_preferencije],
             "Student": [data.get("JMBAG")],
             "datum_prijave": current_date,
             "process_instance_id": data["id_instance"] or "",
@@ -321,7 +324,6 @@ async def register_assignments(req):
             table_id=TABLES_MAP["Alokacija"], data=alokacija_data
         )
         if "data" in alokacija_response:
-            print("Alokacija response", alokacija_response)
             response_data["id_alokacija"] = alokacija_response["data"]["id_alokacija"]
         elif "error" in alokacija_response:
             return aiohttp.web.Response(
@@ -335,14 +337,14 @@ async def register_assignments(req):
     )
 
 
-@routes.get("/api/student_preferencije/detailed/{JMBAG}")
+@routes.get("/api/student_preferencije/detailed/{id_preferencije}")
 async def fetch_student_preferences_detailed(request):
-    JMBAG = request.match_info.get("JMBAG", None)
+    id_preferencije = request.match_info.get("id_preferencije", None)
 
-    # If JMBAG is missing, return error
-    if not JMBAG:
+    # If id_alokacija is missing, return error
+    if not id_preferencije:
         return aiohttp.web.Response(
-            text=json.dumps({"error": "Missing JMBAG."}),
+            text=json.dumps({"error": "Missing id_preferencije."}),
             status=400,
             content_type="application/json",
         )
@@ -350,8 +352,9 @@ async def fetch_student_preferences_detailed(request):
     # First get the student preferences
     table_id = TABLES_MAP["Student_preferencije"]
     row_id = client.get_row_id_by_attribute(
-        table_id, "JMBAG", JMBAG, br.Student_preferencije_Mappings
+        table_id, "id_preferencije", id_preferencije, br.Student_preferencije_Mappings
     )
+    print("FOUND ROW ID", row_id)
     if not row_id:
         return aiohttp.web.Response(
             text=json.dumps({"error": "Student not found."}),
