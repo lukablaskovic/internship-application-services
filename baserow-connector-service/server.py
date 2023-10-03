@@ -395,8 +395,11 @@ async def alokacija_studenta(request):
     # Parse incoming request data
     data = await request.json()
     student = data.get("Student")
+    id_alokacija = data.get("id_alokacija")
+    print("id_alokacija ", id_alokacija)
     alocirani_zadatak_id = data.get("Alocirani_zadatak")
     status_zahtjeva = "evaluacija_u_tijeku"
+
     if not student or not alocirani_zadatak_id:
         return aiohttp.web.Response(
             text=json.dumps({"error": "Missing JMBAG or Alocirani zadatak"}),
@@ -404,15 +407,10 @@ async def alokacija_studenta(request):
             content_type="application/json",
         )
 
-    table_id = TABLES_MAP["Alokacija"]
-    row_id = client.get_row_id_by_attribute(
-        table_id, "JMBAG", student[0], br.Alokacija_Mappings
-    )
-
-    if not row_id:
+    if not id_alokacija:
         return aiohttp.web.Response(
             text=json.dumps(
-                {"error": f"Student ${student[0]} not found in Alokacija table."}
+                {"error": f"Alokacija ${id_alokacija} not found in Alokacija table."}
             ),
             status=404,
             content_type="application/json",
@@ -422,7 +420,15 @@ async def alokacija_studenta(request):
         "Alocirani_zadatak": [alocirani_zadatak_id],
         "status_zahtjeva": status_zahtjeva,
     }
-    update_response = client.update_row(table_id, row_id, update_data)
+
+    row_id = client.get_row_id_by_attribute(
+        TABLES_MAP["Alokacija"], "id_alokacija", id_alokacija, br.Alokacija_Mappings
+    )
+
+    update_response = client.update_row(
+        table_id=TABLES_MAP["Alokacija"], row_id=row_id, data=update_data
+    )
+    print(update_response)
 
     if "error" in update_response:
         return aiohttp.web.Response(
@@ -473,14 +479,13 @@ async def update_status_zahtjeva(request):
 async def fetch_public_alokacije(request):
     table_id = TABLES_MAP["Alokacija"]
 
-    # Extract the JMBAG value from query parameters
-    JMBAG = request.query.get("JMBAG", None)
+    # Extract the id_alokacija value from query parameters
+    id_alokacija = request.query.get("id_alokacija", None)
 
     def format_output(row):
         zadatak_details = None
         try:
             zadatak_id = row.get("Alocirani_zadatak", None)
-            id_alokacija = row.get("id_alokacija", None)
 
             if zadatak_id and len(zadatak_id) > 0:
                 zadatak_data = client.get_row(
@@ -497,7 +502,7 @@ async def fetch_public_alokacije(request):
 
         return {
             "JMBAG": row.get("JMBAG", ""),
-            "id_alokacija": id_alokacija,
+            "id_alokacija": row.get("id_alokacija", ""),
             "Alocirani_zadatak": zadatak_id[0]["value"]
             if zadatak_id and len(zadatak_id) > 0
             else None,
@@ -515,11 +520,11 @@ async def fetch_public_alokacije(request):
             "predan_dnevnik_prakse": row.get("predan_dnevnik_prakse", ""),
         }
 
-    if JMBAG is not None:
-        print("JMBAG", JMBAG)
+    if id_alokacija is not None:
+        print("id_alokacija", id_alokacija)
         # Get the student alokacija record ID using JMBAG
         row_id = client.get_row_id_by_attribute(
-            table_id, "JMBAG", JMBAG, br.Alokacija_Mappings
+            table_id, "id_alokacija", id_alokacija, br.Alokacija_Mappings
         )
 
         if not row_id:
@@ -586,6 +591,7 @@ async def fill_application_form(request):
         "Poslodavac": [data["Poslodavac"]],
         "mjesto_izvrsavanja": data["mjesto_izvrsavanja"],
         "id_prijavnica": str(uuid.uuid4()),
+        "Alokacija": [data["id_alokacija"]],
         "process_instance_id": data["id_instance"],
     }
 
@@ -598,24 +604,24 @@ async def fill_application_form(request):
             content_type="application/json",
         )
 
-    table_id = TABLES_MAP["Alokacija"]
-    row_id = client.get_row_id_by_attribute(
-        table_id, "process_instance_id", data["id_instance"], br.Alokacija_Mappings
-    )
+    id_alokacija = data["id_alokacija"]
 
-    if not row_id:
+    if not id_alokacija:
         return aiohttp.web.Response(
             text=json.dumps(
-                {
-                    "error": f"Student ${data['id_instance'],} not found in Alokacija table."
-                }
+                {"error": f"Alokacija ID ${id_alokacija} not found in Alokacija table."}
             ),
             status=404,
             content_type="application/json",
         )
 
     update_data = {"popunjena_prijavnica": True}
-    update_response = client.update_row(table_id, row_id, update_data)
+
+    row_id = client.get_row_id_by_attribute(
+        TABLES_MAP["Alokacija"], "id_alokacija", id_alokacija, br.Alokacija_Mappings
+    )
+
+    update_response = client.update_row(TABLES_MAP["Alokacija"], row_id, update_data)
 
     if "error" in update_response:
         return aiohttp.web.Response(
@@ -626,6 +632,7 @@ async def fill_application_form(request):
 
     dnevnik_data = {
         "id_dnevnik_prakse": str(uuid.uuid4()),
+        "Alokacija": [data["id_alokacija"]],
         "Student": [data["Student"][0]],
         "id_prijavnica": [prijavnica_data["id_prijavnica"]],
         "process_instance_id": data["id_instance"],
@@ -695,9 +702,9 @@ async def update_dnevnik(request):
             content_type="application/json",
         )
 
-    table_id = TABLES_MAP["Alokacija"]
+    id_alokacija = data.get("id_alokacija")
     row_id = client.get_row_id_by_attribute(
-        table_id, "process_instance_id", data["id_instance"], br.Alokacija_Mappings
+        TABLES_MAP["Alokacija"], "id_alokacija", id_alokacija, br.Alokacija_Mappings
     )
 
     if not row_id:
@@ -712,7 +719,7 @@ async def update_dnevnik(request):
         )
 
     update_data = {"predan_dnevnik_prakse": True}
-    update_response = client.update_row(table_id, row_id, update_data)
+    update_response = client.update_row(TABLES_MAP["Alokacija"], row_id, update_data)
 
     if "error" in update_response:
         return aiohttp.web.Response(

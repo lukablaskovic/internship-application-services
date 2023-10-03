@@ -77,6 +77,7 @@ Student_preferencije_Mappings = {
 }
 Prijavnica_Mappings = {
     "id_prijavnica": "field_1255558",
+    "Alokacija": "field_1396675",
     "pdf_attachment_url": "field_1255560",  # url
     "Student": "field_1255588",
     "process_instance_id": "field_1317422",
@@ -97,6 +98,7 @@ Prijavnica_Mappings = {
 }
 Dnevnik_prakse_Mappings = {
     "id_dnevnik_prakse": "field_1255561",
+    "Alokacija": "field_1396677",
     "Student": "field_1255562",
     "process_instance_id": "field_1317421",
     "id_prijavnica": "field_1311713",
