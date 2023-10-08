@@ -10,6 +10,7 @@ import json
 from baserow import BaserowClient
 import os, sys
 from datetime import datetime
+import tempfile
 
 from env import BUGSNAG
 
@@ -69,6 +70,7 @@ async def add_new_student(req):
             "prezime": data.get("prezime"),
             "email": data.get("email"),
             "godina_studija": data.get("godina_studija"),
+            "avatar": [data.get("avatar")],
         },
     )
     return aiohttp.web.Response(text=json.dumps(res), content_type="application/json")
@@ -773,6 +775,39 @@ async def fetch_table_rows(request):
         )
     return aiohttp.web.Response(text=json.dumps(rows), content_type="application/json")
 
+@routes.post("/api/direct-file-upload")
+async def direct_upload_to_baserow(request):
+    print("request", request) 
+    reader = await request.multipart()
+    
+    field = await reader.next()
+    
+    assert field.name == 'file'
+    file_content = await field.read(decode=True)
+    file_name = field.filename
+
+    temp_dir = tempfile.gettempdir()  
+    temp_filepath = os.path.join(temp_dir, file_name)
+
+
+    with open(temp_filepath, "wb") as tmpfile:
+        tmpfile.write(file_content)
+
+    try:
+        upload_result = client.upload_file(temp_filepath)
+
+        os.remove(temp_filepath)
+
+        if 'error' in upload_result:
+            return aiohttp.web.Response(text=str(upload_result["error"]), status=upload_result.get("status_code", 500))
+        else:
+            return aiohttp.web.Response(text=json.dumps(upload_result), status=200)
+
+    except Exception as e:
+        if os.path.exists(temp_filepath):
+            os.remove(temp_filepath)
+        return aiohttp.web.Response(text=f"An error occurred: {str(e)}", status=500)
+    
 
 # Store files on Baserow server
 @routes.post("/api/file-upload")
@@ -794,7 +829,6 @@ async def upload_to_baserow(request):
     loop = asyncio.get_event_loop()
     client = BaserowClient()
     response = await loop.run_in_executor(None, client.upload_file, filename)
-
     os.remove(filename)
 
     # Return the response data and status
