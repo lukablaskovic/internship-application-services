@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "pdf-maker-service-node",
+  "name": "pdf-connector-service",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
