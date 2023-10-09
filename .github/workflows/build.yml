@@ -21,15 +21,15 @@ jobs:
 
       - name: Build and push fp-baserow-connector-service image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/fp-baserow-connector-service:latest ./fp-baserow-connector-service
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/fp-baserow-connector-service:latest ./baserow-connector-service
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/fp-baserow-connector-service:latest
 
       - name: Build and push fp-sendgrid-connector-service image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/fp-sendgrid-connector-service:latest ./fp-sendgrid-connector-service
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/fp-sendgrid-connector-service:latest ./sendgrid-connector-service
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/fp-sendgrid-connector-service:latest
 
       - name: Build and push fp-pdf-connector-service image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/fp-pdf-connector-service:latest ./fp-pdf-connector-service
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/fp-pdf-connector-service:latest ./pdf-connector-service
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/fp-pdf-connector-service:latest
