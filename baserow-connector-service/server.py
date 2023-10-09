@@ -1,7 +1,7 @@
 import aiohttp
 import asyncio
 import uuid
-from urllib import parse
+from urllib3 import parse
 import os
 import aiohttp_cors
 import datetime as dt
