@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-import urllib3
+from urllib.parse import quote
 import requests
 
 load_dotenv()
@@ -28,9 +28,9 @@ class BaserowClient:
 
     def get_table_url(self, table_id, id=None):
         if id:
-            return f"{self.base_url}database/rows/table/{urllib3.parse.quote(table_id)}/{id}/?user_field_names=true"
+            return f"{self.base_url}database/rows/table/{quote(table_id)}/{id}/?user_field_names=true"
         else:
-            return f"{self.base_url}database/rows/table/{urllib3.parse.quote(table_id)}/?user_field_names=true"
+            return f"{self.base_url}database/rows/table/{quote(table_id)}/?user_field_names=true"
 
     def handle_response(self, response):
         if response.status_code == 200:

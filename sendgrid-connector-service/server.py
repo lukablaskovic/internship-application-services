@@ -17,7 +17,7 @@ from sendgrid.helpers.mail import (
 import requests
 from aiohttp import web
 import aiohttp_cors
-from urllib3 import parse
+from urllib import parse
 
 from datetime import datetime
 
