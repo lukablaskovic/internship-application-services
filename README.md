@@ -7,8 +7,6 @@ Each service contains `README.md` file in which functionality of each service is
 
 Content is divided into :
 
-- Airtable connector
-- File storage
-- Notifications
-- Pdf editing
-- Slackbot 
+- Baserow connector service
+- Sendgrid connector service
+- PDF connector service
