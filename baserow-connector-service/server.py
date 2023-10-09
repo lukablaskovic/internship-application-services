@@ -11,11 +11,10 @@ from baserow import BaserowClient
 import os, sys
 from datetime import datetime
 import tempfile
-
-from env import BUGSNAG
-
+from dotenv import load_dotenv
 import bugsnag
 
+load_dotenv()
 routes = aiohttp.web.RouteTableDef()
 
 app = None
@@ -775,20 +774,20 @@ async def fetch_table_rows(request):
         )
     return aiohttp.web.Response(text=json.dumps(rows), content_type="application/json")
 
+
 @routes.post("/api/direct-file-upload")
 async def direct_upload_to_baserow(request):
-    print("request", request) 
+    print("request", request)
     reader = await request.multipart()
-    
+
     field = await reader.next()
-    
-    assert field.name == 'file'
+
+    assert field.name == "file"
     file_content = await field.read(decode=True)
     file_name = field.filename
 
-    temp_dir = tempfile.gettempdir()  
+    temp_dir = tempfile.gettempdir()
     temp_filepath = os.path.join(temp_dir, file_name)
-
 
     with open(temp_filepath, "wb") as tmpfile:
         tmpfile.write(file_content)
@@ -798,8 +797,11 @@ async def direct_upload_to_baserow(request):
 
         os.remove(temp_filepath)
 
-        if 'error' in upload_result:
-            return aiohttp.web.Response(text=str(upload_result["error"]), status=upload_result.get("status_code", 500))
+        if "error" in upload_result:
+            return aiohttp.web.Response(
+                text=str(upload_result["error"]),
+                status=upload_result.get("status_code", 500),
+            )
         else:
             return aiohttp.web.Response(text=json.dumps(upload_result), status=200)
 
@@ -807,7 +809,7 @@ async def direct_upload_to_baserow(request):
         if os.path.exists(temp_filepath):
             os.remove(temp_filepath)
         return aiohttp.web.Response(text=f"An error occurred: {str(e)}", status=500)
-    
+
 
 # Store files on Baserow server
 @routes.post("/api/file-upload")
@@ -955,7 +957,7 @@ async def restart_server(request):
 
 project_root = os.path.dirname(os.path.abspath(__file__))
 bugsnag.configure(
-    api_key=BUGSNAG,
+    api_key=os.getenv("BUGSNAG"),
     project_root=project_root,
 )
 

@@ -1,3 +1,4 @@
 env.py
+.env
 airtable-venv/
 __pycache__/

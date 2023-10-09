@@ -18,12 +18,15 @@ import requests
 from aiohttp import web
 import aiohttp_cors
 from urllib import parse
-from env import *
+
 from datetime import datetime
 
-from env import BUGSNAG
 
-SG = sendgrid.SendGridAPIClient(API_KEY)
+from dotenv import load_dotenv
+
+load_dotenv()
+
+SG = sendgrid.SendGridAPIClient(os.getenv("API_KEY"))
 # HEADER = {"Authorization": "Bearer "+API_KEY}
 
 
@@ -43,24 +46,28 @@ async def send_email(request, template_type):
         pass
 
     message = Mail(
-        from_email=FROM_EMAIL,
+        from_email=os.getenv("FROM_EMAIL"),
         to_emails=query_dict["to"],
     )
 
     if template_type == "student_after_approval":
-        message.template_id = STUDENT_AFTER_APPROVAL_TEMPLATE
+        message.template_id = os.getenv("STUDENT_AFTER_APPROVAL_TEMPLATE")
     elif template_type == "student_after_refusal":
-        message.template_id = STUDENT_AFTER_REFUSAL_TEMPLATE
+        message.template_id = os.getenv("STUDENT_AFTER_REFUSAL_TEMPLATE")
     elif template_type == "student_after_allocation":
-        message.template_id = STUDENT_AFTER_ALLOCATION_NOTIFICATION_TEMPLATE
+        message.template_id = os.getenv(
+            "STUDENT_AFTER_ALLOCATION_NOTIFICATION_TEMPLATE"
+        )
     elif template_type == "student_after_return":
-        message.template_id = STUDENT_AFTER_RETURN_TEMPLATE
+        message.template_id = os.getenv("STUDENT_AFTER_RETURN_TEMPLATE")
     elif template_type == "poslodavac_after_allocation":
-        message.template_id = POSLODAVAC_AFTER_ALLOCATION_NOTIFICATION_TEMPLATE
+        message.template_id = os.getenv(
+            "POSLODAVAC_AFTER_ALLOCATION_NOTIFICATION_TEMPLATE"
+        )
     elif template_type == "student_potvrda_pdf":
-        message.template_id = STUDENT_SEND_PDF_TEMPLATE
+        message.template_id = os.getenv("STUDENT_SEND_PDF_TEMPLATE")
     elif template_type == "mentor_potvrda_pdf":
-        message.template_id = MENTOR_SEND_PDF_TEMPLATE
+        message.template_id = os.getenv("MENTOR_SEND_PDF_TEMPLATE")
     message.dynamic_template_data = DynamicTemplateData(data)
 
     if "attachment_url" in data:
@@ -129,7 +136,7 @@ app = None
 
 project_root = os.path.dirname(os.path.abspath(__file__))
 bugsnag.configure(
-    api_key=BUGSNAG,
+    api_key=os.getenv("BUGSNAG"),
     project_root=project_root,
 )
 
