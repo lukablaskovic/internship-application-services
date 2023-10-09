@@ -1,0 +1,35 @@
+name: Build and Deploy Docker Images
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push baserow-connector-service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/baserow-connector-service:latest ./baserow-connector-service
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/baserow-connector-service:latest
+
+      - name: Build and push sendgrid-connector-service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/sendgrid-connector-service:latest ./sendgrid-connector-service
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/sendgrid-connector-service:latest
+
+      - name: Build and push pdf-connector-service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/pdf-connector-service:latest ./pdf-connector-service
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/pdf-connector-service:latest
