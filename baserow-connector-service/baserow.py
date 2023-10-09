@@ -1,5 +1,7 @@
 import os
 from dotenv import load_dotenv
+import urllib
+import requests
 
 load_dotenv()
 
