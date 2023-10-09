@@ -1,4 +1,4 @@
+.env
 env.py
 sendgrid-venv/
 __pycache__/
-.env
