@@ -82,6 +82,13 @@ router.post("/potvrda", async (req, res) => {
       recursive: true,
     });
 
+    console.log("test1", fs.existsSync(path.join(currentModuleDir, "potvrde")));
+
+    console.log(
+      "test2",
+      fs.existsSync(path.join(currentModuleDir, "potvrde/temp.pdf"))
+    );
+
     const filePath = path.join(currentModuleDir, "potvrde", fileName);
     console.log("filePath", filePath);
 
