@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install && npx playwright install chromium
+RUN npm install && npx playwright install chromium && npx playwright install 
 
 COPY . ./
 
