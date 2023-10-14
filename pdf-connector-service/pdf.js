@@ -78,10 +78,6 @@ router.post("/potvrda", async (req, res) => {
 
     const currentModuleDir = path.dirname(currentModulePath);
 
-    await fs.promises.mkdir(path.join(currentModuleDir, "potvrde"), {
-      recursive: true,
-    });
-
     console.log("test1", fs.existsSync(path.join(currentModuleDir, "potvrde")));
 
     console.log(
