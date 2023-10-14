@@ -75,21 +75,13 @@ router.post("/potvrda", async (req, res) => {
       ".pdf";
 
     const currentModulePath = fileURLToPath(import.meta.url);
-
+    console.log("currentModulePath", currentModulePath);
     const currentModuleDir = path.dirname(currentModulePath);
-
-    console.log("test1", fs.existsSync(path.join(currentModuleDir, "potvrde")));
-
-    console.log(
-      "test2",
-      fs.existsSync(path.join(currentModuleDir, "potvrde/temp.pdf"))
-    );
-
+    console.log("currentModuleDir", currentModuleDir);
     const filePath = path.join(currentModuleDir, "potvrde", fileName);
     console.log("filePath", filePath);
 
-    await fs.promises.writeFile(filePath, pdfBuffer);
-    console.log("written!");
+    await fs.writeFile(filePath, pdfBuffer);
 
     //For LOCAL : pdf_attachment_url: `${process.env.SERVICE_URL}:${process.env.PORT}/api/potvrda/${fileName}`,
     console.log(
