@@ -35,7 +35,7 @@ routes = web.RouteTableDef()
 
 async def send_email(request, template_type):
     data = await request.json()
-    print(data)
+    # print(data)
     # Ensure that all keys are lowercase
     data = {key.lower(): value for key, value in data.items()}
 
@@ -121,15 +121,6 @@ async def status_check(request):
         },
         status=200,
     )
-
-
-@routes.post("/restart")
-async def restart_server(request):
-    """
-    Handler to restart the server.
-    """
-    print("Restarting server...")
-    os.execv(sys.executable, ["python"] + sys.argv)
 
 
 app = None

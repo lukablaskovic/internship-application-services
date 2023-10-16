@@ -35,7 +35,7 @@ client = BaserowClient()
 
 @routes.post("/api/student")
 async def add_new_student(req):
-    print("BASEROW_POST_students\n", req)
+    # print("BASEROW_POST_students\n", req)
 
     data = await req.json()
 
@@ -77,7 +77,7 @@ async def add_new_student(req):
 
 @routes.delete("/api/student/email/{value}")
 async def delete_student(req):
-    print("BASEROW_DELETE_delete_student\n", req)
+    # print("BASEROW_DELETE_delete_student\n", req)
     value = req.match_info.get("value", None)
 
     if not value:
@@ -97,11 +97,9 @@ async def add_new_assignment(req):
     data = await req.json()
     # Check if the company exists in the 'Poslodavac' table
     company_name = data.get("Poslodavac")[0]
-    print("company_name", company_name)
     existing_company_id = client.get_row_id_by_attribute(
         TABLES_MAP["Poslodavac"], "naziv", company_name, br.Poslodavac_Mappings
     )
-    print("existing_company_id", existing_company_id)
 
     # If company doesn't exist, create a new entry in the 'Poslodavac' table
     if not existing_company_id:
@@ -140,7 +138,7 @@ async def add_new_assignment(req):
 
     creation_response = client.create_row(TABLES_MAP["Zadaci_za_odabir"], new_row_data)
 
-    print("creation_response", creation_response)
+    # print("creation_response", creation_response)
 
     if "data" in creation_response:
         new_row_id = creation_response["data"]["id"]
@@ -286,7 +284,7 @@ async def update_voditelj_odobrio(req):
 
 @routes.post("/api/student_preferencije")
 async def register_assignments(req):
-    print("BASEROW_POST_register_assignments\n", req)
+    # print("BASEROW_POST_register_assignments\n", req)
     data = await req.json()
     preferencije_data = {
         "id_preferencije": str(uuid.uuid4()),
@@ -355,7 +353,7 @@ async def fetch_student_preferences_detailed(request):
     row_id = client.get_row_id_by_attribute(
         table_id, "id_preferencije", id_preferencije, br.Student_preferencije_Mappings
     )
-    print("FOUND ROW ID", row_id)
+    # print("FOUND ROW ID", row_id)
     if not row_id:
         return aiohttp.web.Response(
             text=json.dumps({"error": "Student not found."}),
@@ -397,7 +395,7 @@ async def alokacija_studenta(request):
     data = await request.json()
     student = data.get("Student")
     id_alokacija = data.get("id_alokacija")
-    print("id_alokacija ", id_alokacija)
+    # print("id_alokacija ", id_alokacija)
     alocirani_zadatak_id = data.get("Alocirani_zadatak")
     status_zahtjeva = "evaluacija_u_tijeku"
 
@@ -429,7 +427,7 @@ async def alokacija_studenta(request):
     update_response = client.update_row(
         table_id=TABLES_MAP["Alokacija"], row_id=row_id, data=update_data
     )
-    print(update_response)
+    # print(update_response)
 
     if "error" in update_response:
         return aiohttp.web.Response(
@@ -522,7 +520,7 @@ async def fetch_public_alokacije(request):
         }
 
     if id_alokacija is not None:
-        print("id_alokacija", id_alokacija)
+        # print("id_alokacija", id_alokacija)
         # Get the student alokacija record ID using JMBAG
         row_id = client.get_row_id_by_attribute(
             table_id, "id_alokacija", id_alokacija, br.Alokacija_Mappings
@@ -777,7 +775,7 @@ async def fetch_table_rows(request):
 
 @routes.post("/api/direct-file-upload")
 async def direct_upload_to_baserow(request):
-    print("request", request)
+    # print("request", request)
     reader = await request.multipart()
 
     field = await reader.next()
@@ -868,23 +866,19 @@ async def store_file_in_baserow(
     row_id = client.get_row_id_by_attribute(
         table_id, field_name, field_value, table_mappings
     )
-    print("row_id", row_id)
-    print(
-        "table_id",
-        table_id,
-    )
+    # print("row_id", row_id)
+
     if not row_id:
         return aiohttp.web.json_response({"error": "Row not found."}, status=404)
 
     result = client.update_row(table_id, row_id, baserow_data)
-    print("result from store_file_in_baserow:", result)
+    # print("result from store_file_in_baserow:", result)
     return aiohttp.web.json_response(result)
 
 
 @routes.post("/api/upload/student-avatar/{JMBAG}")
 async def store_student_avatar(request):
     jmbag = request.match_info.get("JMBAG")
-    print(jmbag)
     return await store_file_in_baserow(
         request, TABLES_MAP["Student"], "JMBAG", jmbag, br.Student_Mappings, "avatar"
     )
@@ -944,15 +938,6 @@ async def status_check(request):
         },
         status=200,
     )
-
-
-@routes.post("/restart")
-async def restart_server(request):
-    """
-    Handler to restart the server.
-    """
-    print("Restarting server...")
-    os.execv(sys.executable, ["python"] + sys.argv)
 
 
 project_root = os.path.dirname(os.path.abspath(__file__))
