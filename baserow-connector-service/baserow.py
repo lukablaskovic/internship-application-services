@@ -7,9 +7,9 @@ load_dotenv()
 
 BASEROW_URL = "https://api.baserow.io/api/"
 
-DATABASE_TOKEN = os.getenv("YOUR_DATABASE_TOKEN")
+DATABASE_TOKEN = os.getenv("BASEROW_TOKEN")
 if DATABASE_TOKEN is None:
-    raise ValueError("Environment variable YOUR_DATABASE_TOKEN is not set")
+    raise ValueError("Environment variable BASEROW_TOKEN is not set")
 
 AUTH_HEADER = {"Authorization": "Token " + DATABASE_TOKEN}
 GET_HEADER = AUTH_HEADER
