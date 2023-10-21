@@ -173,6 +173,6 @@ async def serve():
 
 if __name__ == "__main__":
     app = run()
-    web.run_app(app, port=8081)
+    web.run_app(app, port=os.getenv("PORT", 8083))
 
 # conda activate sendgrid-connector-service && npx nodemon server.py

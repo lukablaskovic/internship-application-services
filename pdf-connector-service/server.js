@@ -9,7 +9,7 @@ import Bugsnag from "@bugsnag/js";
 import bugsnagPluginExpress from "@bugsnag/plugin-express";
 
 const app = express();
-const DEFAULT_PORT = 3001;
+const DEFAULT_PORT = 8084;
 const port = process.env.PORT || DEFAULT_PORT;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

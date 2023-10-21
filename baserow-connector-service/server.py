@@ -942,7 +942,7 @@ async def status_check(request):
 
 project_root = os.path.dirname(os.path.abspath(__file__))
 bugsnag.configure(
-    api_key=os.getenv("BUGSNAG"),
+    api_key=os.getenv("BCS_BUGSNAG"),
     project_root=project_root,
 )
 
@@ -988,6 +988,6 @@ async def serve():
 
 if __name__ == "__main__":
     app = run()
-    aiohttp.web.run_app(app, port=8080)
+    aiohttp.web.run_app(app, port=os.getenv("PORT", 8081))
 
 # conda activate baserow-connector-service && npx nodemon server.py
