@@ -10,6 +10,11 @@ BASE_URL = os.getenv("BASE_URL")
 
 if DATABASE_TOKEN is None:
     raise ValueError("Environment variable BASEROW_TOKEN is not set")
+if BASE_URL is None:
+    raise ValueError("Environment variable BASE_URL is not set")
+
+print(f"BASE_URL: {BASE_URL}")
+print(f"DATABASE_TOKEN: {DATABASE_TOKEN}")
 
 AUTH_HEADER = {"Authorization": "Token " + DATABASE_TOKEN}
 GET_HEADER = AUTH_HEADER
