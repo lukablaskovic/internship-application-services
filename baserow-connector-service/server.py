@@ -19,7 +19,7 @@ routes = aiohttp.web.RouteTableDef()
 
 app = None
 
-TABLES_MAP = {
+TABLES_MAP_DEV = {
     "Student": "186615",
     "Poslodavac": "186616",
     "Zadaci_za_odabir": "186618",
@@ -27,6 +27,16 @@ TABLES_MAP = {
     "Alokacija": "186614",
     "Prijavnica": "186620",
     "Dnevnik_prakse": "186621",
+}
+
+TABLES_MAP = {
+    "Student": "488",
+    "Poslodavac": "489",
+    "Zadaci_za_odabir": "490",
+    "Student_preferencije": "491",
+    "Alokacija": "492",
+    "Prijavnica": "493",
+    "Dnevnik_prakse": "494",
 }
 
 
