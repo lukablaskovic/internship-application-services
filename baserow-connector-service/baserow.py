@@ -5,9 +5,9 @@ import requests
 
 load_dotenv()
 
-BASEROW_URL = "https://api.baserow.io/api/"
-
 DATABASE_TOKEN = os.getenv("BASEROW_TOKEN")
+BASE_URL = os.getenv("BASE_URL")
+
 if DATABASE_TOKEN is None:
     raise ValueError("Environment variable BASEROW_TOKEN is not set")
 
@@ -22,7 +22,7 @@ from mappings import *
 
 
 class BaserowClient:
-    def __init__(self, base_url="https://api.baserow.io/api/"):
+    def __init__(self, base_url=BASE_URL):
         self.base_url = base_url
         self.headers = POST_PATCH_HEADER
 

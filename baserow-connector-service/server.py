@@ -45,8 +45,6 @@ client = BaserowClient()
 
 @routes.post("/api/student")
 async def add_new_student(req):
-    # print("BASEROW_POST_students\n", req)
-
     data = await req.json()
 
     jmbag = data.get("JMBAG")
