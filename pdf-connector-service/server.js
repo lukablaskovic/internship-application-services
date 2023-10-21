@@ -14,7 +14,7 @@ const port = process.env.PORT || DEFAULT_PORT;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 Bugsnag.start({
-  apiKey: process.env.BUGSNAG_API_KEY,
+  apiKey: process.env.BUGSNAG,
   plugins: [bugsnagPluginExpress],
 });
 
