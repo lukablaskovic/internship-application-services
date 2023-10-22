@@ -88,7 +88,6 @@ class BaserowClient:
         # print(f"Filtering by: {parameters}")
 
         rows = self.get_table_rows(table_id, parameters)
-        # print("rows", rows)
         if "data" in rows and rows["data"]["results"]:
             return rows["data"]["results"][0]["id"]
         return None
@@ -97,22 +96,23 @@ class BaserowClient:
         try:
             url = self.get_table_url(table_id)
             response = requests.post(url, headers=self.headers, json=data)
-            # print("response", response.content)
+            print("response", response.content)
             return self.handle_response(response)
         except Exception as e:
             print(e)
 
     def update_row(self, table_id, row_id, data):
         url = self.get_table_url(table_id, row_id)
-        # print("update_row_url", url)
         response = requests.patch(url, headers=self.headers, json=data)
-        # print("update_row_response", response)
+        print("update_row_response", response)
 
         return self.handle_response(response)
 
     def delete_row(self, table_id, row_id):
         url = self.get_table_url(table_id, row_id)
         response = requests.delete(url, headers=self.headers)
+        print("delete_row_response", response)
+
         if response.status_code == 204:
             return True
         else:
