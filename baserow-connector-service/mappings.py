@@ -48,6 +48,7 @@ Poslodavac_Mappings = {
 Zadaci_za_odabir_Mappings = {
     "id_zadatak": "field_4517",
     "voditelj_odobrio": "field_4518",
+    "Poslodavac": "field_4623",
     "poslodavac_email": "field_4546",
     "broj_studenata": "field_4547",
     "dostupno_mjesta": "field_4585",
