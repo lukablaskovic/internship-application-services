@@ -644,6 +644,9 @@ async def fetch_public_alokacije(request):
             "status_zahtjeva": row.get("status_zahtjeva", ""),
             "popunjena_prijavnica": row.get("popunjena_prijavnica", ""),
             "predan_dnevnik_prakse": row.get("predan_dnevnik_prakse", ""),
+            "Dnevnik_prakse": row.get("Dnevnik_prakse", ""),
+            "Prijavnica": row.get("Prijavnica", ""),
+            "process_instance_id": row.get("process_instance_id", "")
         }
 
     if id_alokacija is not None:

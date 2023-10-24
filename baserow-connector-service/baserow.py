@@ -13,9 +13,6 @@ if DATABASE_TOKEN is None:
 if BASE_URL is None:
     raise ValueError("Environment variable BASE_URL is not set")
 
-print(f"BASE_URL: {BASE_URL}")
-print(f"DATABASE_TOKEN: {DATABASE_TOKEN}")
-
 AUTH_HEADER = {"Authorization": "Token " + DATABASE_TOKEN}
 GET_HEADER = AUTH_HEADER
 POST_PATCH_HEADER = {
