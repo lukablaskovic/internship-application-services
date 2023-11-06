@@ -7,6 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 
 RUN npm install
+RUN ln -snf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && echo Europe/Berlin > /etc/timezone
 
 COPY . ./
 
