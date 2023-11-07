@@ -389,7 +389,7 @@ async def register_assignments(req):
             response_data["student_id"] = student_id
             response_data["id_preferencije"] = Student_preferencije
 
-            current_date = dt.datetime.utcnow().isoformat() + "Z"
+            current_date = dt.datetime.now().isoformat() + "Z"
 
             alokacija_data = {
                 "id_alokacija": str(uuid.uuid4()),
@@ -1180,7 +1180,7 @@ async def status_check(request):
             "microservice": "sendgrid-connector-notification-service",
             "status": "OK",
             "message": "Service is running",
-            "status_check_timestamp": datetime.utcnow().isoformat(),
+            "status_check_timestamp": datetime.now().isoformat(),
         },
         status=200,
     )

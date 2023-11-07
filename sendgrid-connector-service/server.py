@@ -117,7 +117,7 @@ async def status_check(request):
             "microservice": "sendgrid-connector-notification-service",
             "status": "OK",
             "message": "Service is running",
-            "status_check_timestamp": datetime.utcnow().isoformat(),
+            "status_check_timestamp": datetime.now().isoformat(),
         },
         status=200,
     )
