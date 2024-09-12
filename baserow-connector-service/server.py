@@ -17,7 +17,6 @@ import logging
 load_dotenv()
 routes = aiohttp.web.RouteTableDef()
 
-
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
