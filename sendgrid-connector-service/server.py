@@ -114,7 +114,7 @@ async def status_check(request):
     """
     return web.json_response(
         {
-            "microservice": "sendgrid-connector-notification-service",
+            "microservice": "sendgrid-connector-service",
             "status": "OK",
             "message": "Service is running",
             "status_check_timestamp": datetime.now().isoformat(),

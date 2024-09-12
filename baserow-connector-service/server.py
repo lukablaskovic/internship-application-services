@@ -1177,7 +1177,7 @@ async def status_check(request):
     """
     return aiohttp.web.json_response(
         {
-            "microservice": "sendgrid-connector-notification-service",
+            "microservice": "baserow-connector-service",
             "status": "OK",
             "message": "Service is running",
             "status_check_timestamp": datetime.now().isoformat(),
