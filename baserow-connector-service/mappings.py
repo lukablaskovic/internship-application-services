@@ -33,6 +33,8 @@ Student_Mappings = {
     "Prijavnica": "field_4536",
     "Dnevnik_prakse": "field_4611",
     "Alokacija": "field_4538",
+    "Model_prakse": "field_4639",
+    "process_instance_id": "field_4640"
 }
 
 Poslodavac_Mappings = {

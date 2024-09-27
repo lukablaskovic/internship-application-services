@@ -68,6 +68,7 @@ async def add_new_student(req):
                 {
                     "error": "Student with entered JMBAG or email already exists",
                     "status_code": 400,
+                    "ERROR_CODE": "BCS_STUDENT_ALREADY_EXISTS",
                 }
             ),
             content_type="application/json",
@@ -82,11 +83,11 @@ async def add_new_student(req):
             "prezime": data.get("prezime"),
             "email": email,
             "godina_studija": data.get("godina_studija"),
-            "avatar": [data.get("avatar")],
+            "avatar": data.get("avatar")
         },
     )
 
-    if res:
+    if not res.get("error"):
         logger.info(
             "Successfully added new student with JMBAG %s and email %s", jmbag, email
         )
@@ -97,6 +98,52 @@ async def add_new_student(req):
 
     return aiohttp.web.Response(text=json.dumps(res), content_type="application/json")
 
+@routes.patch("/api/student/process")
+async def set_student_internship_process(req):
+    data = await req.json()
+    logger.info("Received data: %s", data)
+
+    email = data.get("email")
+    process_instance_id = data.get("process_instance_id")
+    model_prakse = data.get("Model_prakse")
+
+    student_id = client.get_row_id_by_attribute(
+        TABLES_MAP["Student"], "email", email, br.Student_Mappings
+    )
+
+    if not student_id:
+        logger.warning("Student with email %s not found", email)
+        return aiohttp.web.Response(
+            text=json.dumps(
+                {
+                    "error": "Student with entered email not found",
+                    "status_code": 404,
+                    "ERROR_CODE": "BCS_STUDENT_NOT_FOUND",
+                }
+            ),
+            content_type="application/json",
+            status=404,
+        )
+
+    res = client.update_row(
+        TABLES_MAP["Student"],
+        student_id,
+        {
+            "process_instance_id": process_instance_id,
+            "Model_prakse" : model_prakse
+        },
+    )
+
+    if not res.get("error"):
+        logger.info(
+            "Successfully updated student with email %s", email
+        )
+    else:
+        logger.error(
+            "Failed to update student with email %s", email
+        )
+
+    return aiohttp.web.Response(text=json.dumps(res), content_type="application/json")
 
 @routes.delete("/api/student/email/{value}")
 async def delete_student(req):
@@ -1071,25 +1118,6 @@ async def store_file_in_baserow(
     return aiohttp.web.json_response(result)
 
 
-@routes.post("/api/upload/student-avatar/{JMBAG}")
-async def store_student_avatar(request):
-    logger.info("Received request to store student avatar")
-
-    jmbag = request.match_info.get("JMBAG")
-    if not jmbag:
-        logger.error("Missing JMBAG in request")
-        return aiohttp.web.json_response({"error": "Missing JMBAG."}, status=400)
-
-    response = await store_file_in_baserow(
-        request, TABLES_MAP["Student"], "JMBAG", jmbag, br.Student_Mappings, "avatar"
-    )
-
-    if "error" in response:
-        logger.error("Error storing student avatar: %s", response["error"])
-
-    return response
-
-
 @routes.post("/api/upload/poslodavac-logo/{naziv}")
 async def store_poslodavac_logo(request):
     logger.info("Received request to store employer logo")
@@ -1235,4 +1263,4 @@ if __name__ == "__main__":
     app = run()
     aiohttp.web.run_app(app, port=os.getenv("PORT", 8081))
 
-# conda activate baserow-connector-service && npx nodemon server.py
+# conda activate bsc && npx nodemon server.py
