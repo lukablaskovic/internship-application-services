@@ -11,7 +11,7 @@ multidict==5.1.0
 python-dotenv==1.0.0
 python-http-client==3.3.2
 requests==2.31.0
-sendgrid==6.8.0
+sendgrid==6.11.0
 starkbank-ecdsa==1.1.1
 typing-extensions==3.10.0.0
 urllib3==2.0.4

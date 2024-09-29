@@ -106,6 +106,8 @@ async def set_student_internship_process(req):
     email = data.get("email")
     process_instance_id = data.get("process_instance_id")
     model_prakse = data.get("Model_prakse")
+    JMBAG = data.get("JMBAG")
+    godina_studija = data.get("godina_studija")
 
     student_id = client.get_row_id_by_attribute(
         TABLES_MAP["Student"], "email", email, br.Student_Mappings
@@ -130,7 +132,9 @@ async def set_student_internship_process(req):
         student_id,
         {
             "process_instance_id": process_instance_id,
-            "Model_prakse" : model_prakse
+            "Model_prakse" : model_prakse,
+            "godina_studija": godina_studija,
+            "JMBAG": JMBAG
         },
     )
 
@@ -594,6 +598,55 @@ async def alokacija_studenta(request):
         text=json.dumps(update_response), content_type="application/json"
     )
 
+@routes.post("/api/alokacija/direct")
+async def alokacija_direct_b(request):
+    logger.info("Route /api/alokacija accessed")
+
+    data = await request.json()
+    logger.info("Received data: %s", data)
+    response_data = {}
+    try:
+        current_date = dt.datetime.now().isoformat() + "Z"
+
+        alokacija_data = {
+            "id_alokacija": str(uuid.uuid4()),
+            "JMBAG": data.get("JMBAG"),
+            "Student_preferencije": [], # empty since it is model B
+            "Student": [data.get("JMBAG")],
+            "datum_prijave": current_date,
+            "process_instance_id": data["id_instance"] or "",
+            "frontend_url": data["_frontend_url"],
+            "Napomena": data.get("Napomena"),
+        }
+
+        # Add to Alokacija table
+        alokacija_response = client.create_row(
+            table_id=TABLES_MAP["Alokacija"], data=alokacija_data
+        )
+        if "data" in alokacija_response:
+            response_data["id_alokacija"] = alokacija_response["data"][
+                "id_alokacija"
+            ]
+        elif "error" in alokacija_response:
+            return aiohttp.web.Response(
+                text=json.dumps(alokacija_response["error"]),
+                status=alokacija_response["status_code"],
+                content_type="application/json",
+            )
+
+        logger.info("Sending response: %s", response_data)
+        return aiohttp.web.Response(
+            text=json.dumps(response_data), content_type="application/json"
+        )
+        
+    except Exception as e:
+        logger.error("An error occurred: %s", str(e))
+        return aiohttp.web.Response(
+            text="Internal Server Error",
+            status=500,
+            content_type="text/plain",
+        )
+
 
 @routes.patch("/api/status_zahtjeva")
 async def update_status_zahtjeva(request):
@@ -605,6 +658,11 @@ async def update_status_zahtjeva(request):
 
     id_alokacija = data.get("id_alokacija")
     novi_status_zahtjeva = data.get("status_zahtjeva")
+    
+    #B
+    Alocirani_zadatak = data.get("Alocirani_zadatak")
+    
+
 
     if not id_alokacija or not novi_status_zahtjeva:
         logger.error("Missing id_alokacija or status_zahtjeva in request data")
@@ -625,9 +683,14 @@ async def update_status_zahtjeva(request):
             content_type="application/json",
         )
 
-    update_response = client.update_row(
-        table_id, row_id, {"status_zahtjeva": novi_status_zahtjeva}
-    )
+    if not Alocirani_zadatak:
+        update_response = client.update_row(
+            table_id, row_id, {"status_zahtjeva": novi_status_zahtjeva}
+        )
+    else:
+        update_response = client.update_row(
+            table_id, row_id, {"status_zahtjeva": novi_status_zahtjeva, "Alocirani_zadatak": Alocirani_zadatak}
+        )
 
     if "error" in update_response:
         logger.error("Error updating status zahtjeva: %s", update_response["error"])
@@ -753,6 +816,56 @@ async def fetch_public_alokacije(request):
             text=json.dumps(results), content_type="application/json"
         )
 
+
+@routes.get("/api/poslodavac/zadatak")
+async def fetch_poslodavac_from_zadatak(request):
+    logger.info("Received request to fetch poslodavac from zadatak")
+    
+      # Extract the id_zadatak value from query parameters
+    id_zadatak = request.query.get("id_zadatak", None)
+    
+    if not id_zadatak:
+        logger.error("Missing id_zadatak in request")
+        return aiohttp.web.Response(
+            text=json.dumps({"error": "Missing id_zadatak."}),
+            status=400,
+            content_type="application/json",
+        )
+    else:
+        table_id = TABLES_MAP["Zadaci_za_odabir"]
+        row_id = client.get_row_id_by_attribute(
+            table_id, "id_zadatak", id_zadatak, br.Zadaci_za_odabir_Mappings
+        )
+
+        if not row_id:
+            logger.warning("Zadatak with id_zadatak: %s not found", id_zadatak)
+            return aiohttp.web.Response(
+                text=json.dumps({"error": "Zadatak not found."}),
+                status=404,
+                content_type="application/json",
+            )
+
+        zadatak_data = client.get_row(table_id, row_id)
+
+        if "error" in zadatak_data:
+            logger.error(
+                "Error fetching zadatak data: %s", zadatak_data["error"]
+            )
+            return aiohttp.web.Response(
+                text=json.dumps(zadatak_data),
+                status=zadatak_data["status_code"],
+                content_type="application/json",
+            )
+
+        poslodavac = zadatak_data["data"]["Poslodavac"][0]["value"]
+        logger.info(
+            "Successfully fetched poslodavac for zadatak with id_zadatak: %s",
+            id_zadatak,
+        )
+        return aiohttp.web.Response(
+            text=json.dumps({"poslodavac_naziv": poslodavac, "poslodavac_email": zadatak_data["data"]["poslodavac_email"]}),
+            content_type="application/json",
+        )
 
 @routes.post("/api/prijavnica")
 async def fill_application_form(request):

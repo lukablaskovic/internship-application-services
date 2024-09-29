@@ -20,6 +20,7 @@ Alokacija_Mappings = {
     "process_instance_id": "field_4571",
     "frontend_url": "field_4572",
     "predan_dnevnik_prakse": "field_4578",
+    "Napomena": "field_4641"
 }
 
 Student_Mappings = {

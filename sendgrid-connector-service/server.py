@@ -146,7 +146,7 @@ async def bugsnag_middleware(app, handler):
 
 def run():
     global app
-
+    print(SG)
     app = web.Application(middlewares=[bugsnag_middleware])
     app.add_routes(routes)
     cors = aiohttp_cors.setup(
