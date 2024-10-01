@@ -863,7 +863,7 @@ async def fetch_poslodavac_from_zadatak(request):
             id_zadatak,
         )
         return aiohttp.web.Response(
-            text=json.dumps({"poslodavac_naziv": poslodavac, "poslodavac_email": zadatak_data["data"]["poslodavac_email"]}),
+            text=json.dumps({"poslodavac_naziv": poslodavac, "opis_zadatka" : zadatak_data["data"]["opis_zadatka"], "poslodavac_email": zadatak_data["data"]["poslodavac_email"]}),
             content_type="application/json",
         )
 
