@@ -1152,9 +1152,13 @@ async def upload_to_baserow(request):
     if "Content-Type" not in request.headers:
         logger.error("Content-Type header not present.")
         return {"error": "Content-Type header not present."}, 400
+    
+    logger.info(f"++++++++Content-Type: {request.headers.get('Content-Type')}")
 
     reader = await request.multipart()
+    
     field = await reader.next()
+    
     assert field.name == "file"
 
     # Generate a unique filename using UUID

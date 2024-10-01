@@ -28,7 +28,7 @@ Student_Mappings = {
     "prezime": "field_1268623",
     "avatar": "field_1300801",  # File
     "email": "field_1269574",
-    "godina_studija": "field_1255549",  # 1_prijediplomski, 2_prijediplomski, 3_prijediplomski, 1_diplomski, 2_diplomski
+    "godina_studija": "field_1255549",  # 1_prijediplomski, 2_prijediplomski, 3_prijediplomski, 1_diplomski, 2_diplomski, profesor
     "Student_preferencije": "field_1255583",  # []
     "Prijavnica": "field_1255589",
     "Dnevnik_prakse": "field_1255600",
