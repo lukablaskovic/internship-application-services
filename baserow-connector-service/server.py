@@ -51,22 +51,19 @@ async def add_new_student(req):
     data = await req.json()
     logger.info("Received data: %s", data)
 
-    jmbag = data.get("JMBAG")
     email = data.get("email")
+    jmbag = data.get("JMBAG")
 
-    existing_jmbag = client.get_row_id_by_attribute(
-        TABLES_MAP["Student"], "JMBAG", jmbag, br.Student_Mappings
-    )
     existing_email = client.get_row_id_by_attribute(
         TABLES_MAP["Student"], "email", email, br.Student_Mappings
     )
 
-    if existing_jmbag or existing_email:
-        logger.warning("Student with JMBAG %s or email %s already exists", jmbag, email)
+    if existing_email:
+        logger.warning("Student with email %s already exists", email)
         return aiohttp.web.Response(
             text=json.dumps(
                 {
-                    "error": "Student with entered JMBAG or email already exists",
+                    "error": "Student with entered email already exists",
                     "status_code": 400,
                     "ERROR_CODE": "BCS_STUDENT_ALREADY_EXISTS",
                 }
