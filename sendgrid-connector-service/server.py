@@ -68,6 +68,9 @@ async def send_email(request, template_type):
         message.template_id = os.getenv("STUDENT_SEND_PDF_TEMPLATE")
     elif template_type == "mentor_potvrda_pdf":
         message.template_id = os.getenv("MENTOR_SEND_PDF_TEMPLATE")
+    elif template_type == "model_b_student_odobren_zadatak":
+        message.template_id = os.getenv("MODEL_B_STUDENT_ODOBREN_ZADATAK")
+    
     message.dynamic_template_data = DynamicTemplateData(data)
 
     if "attachment_url" in data:
