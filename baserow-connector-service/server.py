@@ -1179,57 +1179,68 @@ async def upload_to_baserow(request):
     return response, 200
 
 
+import asyncio
+
 async def store_file_in_baserow(
     request, table_id, field_name, field_value, table_mappings, file_field_name
 ):
     logger.info("Received request to store file in Baserow")
 
-    # Upload the file to Baserow
-    response, status = await upload_to_baserow(request)
-    # Check if the upload was successful
-    if status != 200:
-        logger.error("Error uploading file to Baserow: %s", response)
-        return aiohttp.web.json_response(response)
+    # Retry logic
+    retries = 3
+    for attempt in range(1, retries + 1):
+        logger.info(f"Attempt {attempt} to store file in Baserow")
 
-    # Get the URL of the uploaded file
-    file_data = response["data"]
-    baserow_data = {
-        file_field_name: [
-            {
-                "url": file_data["url"],
-                "thumbnails": file_data["thumbnails"],
-                "name": file_data["name"],
-                "size": file_data["size"],
-                "mime_type": file_data["mime_type"],
-                "is_image": file_data["is_image"],
-                "image_width": file_data["image_width"],
-                "image_height": file_data["image_height"],
-                "uploaded_at": file_data["uploaded_at"],
+        response, status = await upload_to_baserow(request)
+
+        if status == 200:
+            logger.info("File uploaded successfully")
+
+            file_data = response["data"]
+            baserow_data = {
+                file_field_name: [
+                    {
+                        "url": file_data["url"],
+                        "thumbnails": file_data["thumbnails"],
+                        "name": file_data["name"],
+                        "size": file_data["size"],
+                        "mime_type": file_data["mime_type"],
+                        "is_image": file_data["is_image"],
+                        "image_width": file_data["image_width"],
+                        "image_height": file_data["image_height"],
+                        "uploaded_at": file_data["uploaded_at"],
+                    }
+                ]
             }
-        ]
-    }
 
-    client = BaserowClient()
-    row_id = client.get_row_id_by_attribute(
-        table_id, field_name, field_value, table_mappings
-    )
+            client = BaserowClient()
+            row_id = client.get_row_id_by_attribute(
+                table_id, field_name, field_value, table_mappings
+            )
 
-    if not row_id:
-        logger.warning(
-            "Row not found in table_id: %s, field_name: %s, field_value: %s",
-            table_id,
-            field_name,
-            field_value,
-        )
-        return aiohttp.web.json_response({"error": "Row not found."}, status=404)
+            if not row_id:
+                logger.warning(
+                    "Row not found in table_id: %s, field_name: %s, field_value: %s",
+                    table_id,
+                    field_name,
+                    field_value,
+                )
+                return aiohttp.web.json_response({"error": "Row not found."}, status=404)
 
-    result = client.update_row(table_id, row_id, baserow_data)
-    if "error" in result:
-        logger.error("Error updating row in Baserow: %s", result["error"])
-    else:
-        logger.info("Successfully stored file in Baserow")
+            result = client.update_row(table_id, row_id, baserow_data)
+            if "error" in result:
+                logger.error("Error updating row in Baserow: %s", result["error"])
+            else:
+                logger.info("Successfully stored file in Baserow")
 
-    return aiohttp.web.json_response(result)
+            return aiohttp.web.json_response(result)
+        
+        logger.error(f"Error uploading file to Baserow on attempt {attempt}: {response}")
+        
+        if attempt < retries:
+            await asyncio.sleep(2)
+
+    return aiohttp.web.json_response({"error": "Failed to upload file after multiple attempts."}, status=500)
 
 
 @routes.post("/api/upload/poslodavac-logo/{naziv}")
