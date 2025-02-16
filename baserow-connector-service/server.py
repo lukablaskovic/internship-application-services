@@ -1322,65 +1322,81 @@ async def store_pdf_ispunjena_potvrda(request):
 
 @routes.delete("/api/complete-deletion")
 async def complete_deletion(request):
-    logger.info("Received request to delete all data")
+    logger.info("Received request to delete data")
     data = await request.json()
-    
     logger.info("Received data: %s", data)
+    
     process_instance_id = data.get("process_instance_id")
     id_preferencije = data.get("id_preferencije")
     id_alokacija = data.get("id_alokacija")
     id_dnevnik_prakse = data.get("id_dnevnik_prakse")
     id_prijavnica = data.get("id_prijavnica")
     
-    if not id_preferencije or not id_alokacija or not id_dnevnik_prakse or not id_prijavnica:
-        logger.error("Missing id_preferencije, id_alokacija, id_dnevnik_prakse or id_prijavnica in request data")
+    if not process_instance_id:
+        logger.error("Missing process_instance_id in request data")
         return aiohttp.web.Response(
-            text=json.dumps({"error": "Missing id_preferencije, id_alokacija, id_dnevnik_prakse or id_prijavnica"}),
+            text=json.dumps({"error": "Missing process_instance_id"}),
             status=400,
             content_type="application/json",
         )
-        
+    
     try:
+        results = []
+        
+        # Always attempt to delete Student if process_instance_id is provided
         res_Student_del = client.delete_row_by_attribute(
-          TABLES_MAP["Student"], "process_instance_id", process_instance_id, br.Student_Mappings
+            TABLES_MAP["Student"], "process_instance_id", process_instance_id, br.Student_Mappings
         )
+        results.append(res_Student_del)
         
-        res_Student_preferencije_del = client.delete_row_by_attribute(
-            TABLES_MAP["Student_preferencije"], "id_preferencije", id_preferencije, br.Student_preferencije_Mappings
-        )
+        # Conditionally delete other records if corresponding IDs are provided
+        if id_preferencije:
+            res_Student_preferencije_del = client.delete_row_by_attribute(
+                TABLES_MAP["Student_preferencije"], "id_preferencije", id_preferencije, br.Student_preferencije_Mappings
+            )
+            results.append(res_Student_preferencije_del)
         
-        res_Alokacija_del = client.delete_row_by_attribute(
-            TABLES_MAP["Alokacija"], "id_alokacija", id_alokacija, br.Alokacija_Mappings
-        )
+        if id_alokacija:
+            res_Alokacija_del = client.delete_row_by_attribute(
+                TABLES_MAP["Alokacija"], "id_alokacija", id_alokacija, br.Alokacija_Mappings
+            )
+            results.append(res_Alokacija_del)
         
-        res_Dnevnik_prakse_del = client.delete_row_by_attribute(
-            TABLES_MAP["Dnevnik_prakse"], "id_dnevnik_prakse", id_dnevnik_prakse, br.Dnevnik_prakse_Mappings
-        )
+        if id_dnevnik_prakse:
+            res_Dnevnik_prakse_del = client.delete_row_by_attribute(
+                TABLES_MAP["Dnevnik_prakse"], "id_dnevnik_prakse", id_dnevnik_prakse, br.Dnevnik_prakse_Mappings
+            )
+            results.append(res_Dnevnik_prakse_del)
         
-        res_Prijavnica_del = client.delete_row_by_attribute(
-            TABLES_MAP["Prijavnica"], "id_prijavnica", id_prijavnica, br.Prijavnica_Mappings
+        if id_prijavnica:
+            res_Prijavnica_del = client.delete_row_by_attribute(
+                TABLES_MAP["Prijavnica"], "id_prijavnica", id_prijavnica, br.Prijavnica_Mappings
+            )
+            results.append(res_Prijavnica_del)
+        
+        # Check for errors only if Student, Student_preferencije, or Alokacija deletions fail
+        errors = [res for res in results if "error" in res]
+        
+        if errors:
+            logger.error("Error deleting data: %s", errors)
+            return aiohttp.web.Response(
+                text=json.dumps({"error": "Some deletions failed", "details": errors}),
+                status=500,
+                content_type="application/json",
+            )
+        
+        logger.info("Successfully deleted relevant data for instance: %s", process_instance_id)
+        return aiohttp.web.Response(
+            text=json.dumps({"message": f"Successfully deleted relevant data for instance {process_instance_id}"}),
+            content_type="application/json",
         )
     
-        if "error" in res_Student_del or "error" in res_Student_preferencije_del or "error" in res_Alokacija_del or "error" in res_Dnevnik_prakse_del or "error" in res_Prijavnica_del:
-            logger.error("Error deleting data: %s", res_Student_del["error"])
-            return aiohttp.web.Response(
-                text=json.dumps(res_Student_del["error"]),
-                status=res_Student_del["status_code"],
-                content_type="application/json",
-            )
-        else:
-            logger.info("Successfully deleted all data for instance: %s", process_instance_id)
-            return aiohttp.web.Response(
-                text=json.dumps({"message": f"Successfully deleted all data for instnce {process_instance_id}"}),
-                content_type="application/json",
-            )
-
     except Exception as e:
         logger.error("An error occurred: %s", str(e))
         return aiohttp.web.Response(
-            text="Internal Server Error",
+            text=json.dumps({"error": "Internal Server Error"}),
             status=500,
-            content_type="text/plain",
+            content_type="application/json",
         )
 
 @routes.get("/status")
