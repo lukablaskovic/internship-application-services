@@ -1323,24 +1323,37 @@ async def store_pdf_ispunjena_potvrda(request):
 @routes.delete("/api/complete-deletion")
 async def complete_deletion(request):
     logger.info("Received request to delete data")
-    data = await request.json()
-    logger.info("Received data: %s", data)
-    
-    process_instance_id = data.get("process_instance_id")
-    id_preferencije = data.get("id_preferencije")
-    id_alokacija = data.get("id_alokacija")
-    id_dnevnik_prakse = data.get("id_dnevnik_prakse")
-    id_prijavnica = data.get("id_prijavnica")
-    
-    if not process_instance_id:
-        logger.error("Missing process_instance_id in request data")
-        return aiohttp.web.Response(
-            text=json.dumps({"error": "Missing process_instance_id"}),
-            status=400,
-            content_type="application/json",
-        )
     
     try:
+        # Ensure the body is not empty
+        if request.content_length == 0:
+            logger.error("Empty request body")
+            return aiohttp.web.Response(
+                text=json.dumps({"error": "Empty request body"}),
+                status=400,
+                content_type="application/json",
+            )
+        
+        # Attempt to parse the request body as JSON
+        data = await request.json()
+        logger.info("Received data: %s", data)
+        
+        # Extract relevant data from the request body
+        process_instance_id = data.get("process_instance_id")
+        id_preferencije = data.get("id_preferencije")
+        id_alokacija = data.get("id_alokacija")
+        id_dnevnik_prakse = data.get("id_dnevnik_prakse")
+        id_prijavnica = data.get("id_prijavnica")
+        
+        # Ensure process_instance_id is provided
+        if not process_instance_id:
+            logger.error("Missing process_instance_id in request data")
+            return aiohttp.web.Response(
+                text=json.dumps({"error": "Missing process_instance_id"}),
+                status=400,
+                content_type="application/json",
+            )
+        
         results = []
         
         # Always attempt to delete Student if process_instance_id is provided
@@ -1374,7 +1387,7 @@ async def complete_deletion(request):
             )
             results.append(res_Prijavnica_del)
         
-        # Check for errors only if Student, Student_preferencije, or Alokacija deletions fail
+        # Check for errors only if deletions fail
         errors = [res for res in results if "error" in res]
         
         if errors:
@@ -1391,6 +1404,13 @@ async def complete_deletion(request):
             content_type="application/json",
         )
     
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON format")
+        return aiohttp.web.Response(
+            text=json.dumps({"error": "Invalid JSON format"}),
+            status=400,
+            content_type="application/json",
+        )
     except Exception as e:
         logger.error("An error occurred: %s", str(e))
         return aiohttp.web.Response(
