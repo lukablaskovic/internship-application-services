@@ -26,7 +26,7 @@ jobs:
 
       - name: Build and push fp-sendgrid-connector-service image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/fp-sendgrid-connector-service:latest ./sendgrid-connector-service
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/fp-sendgrid-connector-service:latest ./emailjs-connector-service
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/fp-sendgrid-connector-service:latest
 
       - name: Build and push fp-pdf-connector-service image
