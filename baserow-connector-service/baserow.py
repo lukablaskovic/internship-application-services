@@ -136,7 +136,7 @@ class BaserowClient:
                 "status_code": 404,
             }
 
-    def upload_file(self, filepath):
+    def upload_file(self, filepath, original_filename=None):
         """
         Uploads a file to Baserow.
 
@@ -156,12 +156,22 @@ class BaserowClient:
                 "status_code": 404,
             }
 
-        # Open the file and make the request
-        with open(filepath, "rb") as file:
-            response = requests.post(
-                upload_url,
-                headers=AUTH_HEADER,
-                files={"file": file},
-            )
-        # print(response)
+        try:
+            with open(filepath, "rb") as file:
+                response = requests.post(
+                    upload_url,
+                    headers=AUTH_HEADER,
+                    files={
+                        "file": (
+                            original_filename or os.path.basename(filepath),
+                            file,
+                        )
+                    },
+                )
+        except requests.exceptions.RequestException as exc:
+            return {
+                "error": f"Failed to upload file to Baserow: {exc}",
+                "status_code": 500,
+            }
+
         return self.handle_response(response)
