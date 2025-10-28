@@ -45,88 +45,6 @@ TABLES_MAP = {
 
 client = BaserowClient()
 
-
-async def _extract_file_from_request(request):
-    reader = await request.multipart()
-
-    if reader is None:
-        raise aiohttp.web.HTTPBadRequest(reason="Invalid multipart request.")
-
-    field = await reader.next()
-    if field is None or field.name != "file":
-        raise aiohttp.web.HTTPBadRequest(reason="Missing file part in request.")
-
-    filename = os.path.basename(field.filename or f"upload-{uuid.uuid4()}")
-    file_bytes = await field.read(decode=False)
-
-    if not file_bytes:
-        raise aiohttp.web.HTTPBadRequest(reason="Uploaded file is empty.")
-
-    return filename, file_bytes
-
-
-async def _upload_bytes_to_baserow(filename, file_bytes):
-    temp_file = tempfile.NamedTemporaryFile(delete=False)
-
-    try:
-        temp_file.write(file_bytes)
-        temp_file.close()
-
-        loop = asyncio.get_running_loop()
-        upload_response = await loop.run_in_executor(
-            None,
-            lambda: client.upload_file(
-                temp_file.name,
-                original_filename=filename,
-            ),
-        )
-
-        status = upload_response.get(
-            "status_code", 200 if "error" not in upload_response else 500
-        )
-
-        return upload_response, status
-    except Exception as exc:
-        logger.exception("Error uploading file '%s' to Baserow: %s", filename, exc)
-        return (
-            {
-                "error": "Failed to upload file to Baserow.",
-                "details": str(exc),
-            },
-            500,
-        )
-    finally:
-        try:
-            os.remove(temp_file.name)
-        except Exception:
-            logger.warning(
-                "Unable to remove temporary file %s", temp_file.name, exc_info=True
-            )
-
-
-def _save_failed_upload(filename, file_bytes):
-    try:
-        base_dir = globals().get("project_root") or os.path.dirname(
-            os.path.abspath(__file__)
-        )
-        pdfs_dir = os.path.join(base_dir, "pdfs")
-        os.makedirs(pdfs_dir, exist_ok=True)
-
-        timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
-        safe_filename = f"{timestamp}_{uuid.uuid4().hex}_{os.path.basename(filename)}"
-        destination = os.path.join(pdfs_dir, safe_filename)
-
-        with open(destination, "wb") as destination_file:
-            destination_file.write(file_bytes)
-
-        return destination
-    except Exception as exc:
-        logger.exception(
-            "Failed to persist uploaded file '%s' locally: %s", filename, exc
-        )
-        return None
-
-
 @routes.post("/api/student")
 async def add_new_student(req):
     data = await req.json()
@@ -161,7 +79,7 @@ async def add_new_student(req):
             "prezime": data.get("prezime"),
             "email": email,
             "godina_studija": data.get("godina_studija"),
-            "avatar": data.get("avatar"),
+            "avatar": data.get("avatar")
         },
     )
 
@@ -175,7 +93,6 @@ async def add_new_student(req):
         )
 
     return aiohttp.web.Response(text=json.dumps(res), content_type="application/json")
-
 
 @routes.patch("/api/student/process")
 async def set_student_internship_process(req):
@@ -211,19 +128,22 @@ async def set_student_internship_process(req):
         student_id,
         {
             "process_instance_id": process_instance_id,
-            "Model_prakse": model_prakse,
+            "Model_prakse" : model_prakse,
             "godina_studija": godina_studija,
-            "JMBAG": JMBAG,
+            "JMBAG": JMBAG
         },
     )
 
     if not res.get("error"):
-        logger.info("Successfully updated student with email %s", email)
+        logger.info(
+            "Successfully updated student with email %s", email
+        )
     else:
-        logger.error("Failed to update student with email %s", email)
+        logger.error(
+            "Failed to update student with email %s", email
+        )
 
     return aiohttp.web.Response(text=json.dumps(res), content_type="application/json")
-
 
 @routes.delete("/api/student/email/{value}")
 async def delete_student(req):
@@ -674,7 +594,6 @@ async def alokacija_studenta(request):
         text=json.dumps(update_response), content_type="application/json"
     )
 
-
 @routes.post("/api/alokacija/direct")
 async def alokacija_direct_b(request):
     logger.info("Route /api/alokacija accessed")
@@ -688,7 +607,7 @@ async def alokacija_direct_b(request):
         alokacija_data = {
             "id_alokacija": str(uuid.uuid4()),
             "JMBAG": data.get("JMBAG"),
-            "Student_preferencije": [],  # empty since it is model B
+            "Student_preferencije": [], # empty since it is model B
             "Student": [data.get("JMBAG")],
             "datum_prijave": current_date,
             "process_instance_id": data["id_instance"] or "",
@@ -701,7 +620,9 @@ async def alokacija_direct_b(request):
             table_id=TABLES_MAP["Alokacija"], data=alokacija_data
         )
         if "data" in alokacija_response:
-            response_data["id_alokacija"] = alokacija_response["data"]["id_alokacija"]
+            response_data["id_alokacija"] = alokacija_response["data"][
+                "id_alokacija"
+            ]
         elif "error" in alokacija_response:
             return aiohttp.web.Response(
                 text=json.dumps(alokacija_response["error"]),
@@ -713,7 +634,7 @@ async def alokacija_direct_b(request):
         return aiohttp.web.Response(
             text=json.dumps(response_data), content_type="application/json"
         )
-
+        
     except Exception as e:
         logger.error("An error occurred: %s", str(e))
         return aiohttp.web.Response(
@@ -733,9 +654,11 @@ async def update_status_zahtjeva(request):
 
     id_alokacija = data.get("id_alokacija")
     novi_status_zahtjeva = data.get("status_zahtjeva")
-
-    # B
+    
+    #B
     Alocirani_zadatak = data.get("Alocirani_zadatak")
+    
+
 
     if not id_alokacija or not novi_status_zahtjeva:
         logger.error("Missing id_alokacija or status_zahtjeva in request data")
@@ -762,12 +685,7 @@ async def update_status_zahtjeva(request):
         )
     else:
         update_response = client.update_row(
-            table_id,
-            row_id,
-            {
-                "status_zahtjeva": novi_status_zahtjeva,
-                "Alocirani_zadatak": Alocirani_zadatak,
-            },
+            table_id, row_id, {"status_zahtjeva": novi_status_zahtjeva, "Alocirani_zadatak": Alocirani_zadatak}
         )
 
     if "error" in update_response:
@@ -816,26 +734,24 @@ async def fetch_public_alokacije(request):
         return {
             "JMBAG": row.get("JMBAG", ""),
             "id_alokacija": row.get("id_alokacija", ""),
-            "Alocirani_zadatak": (
-                zadatak_id[0]["value"] if zadatak_id and len(zadatak_id) > 0 else None
-            ),
-            "opis_zadatka": (
-                zadatak_details.get("opis_zadatka") if zadatak_details else None
-            ),
-            "poslodavac_email": (
-                zadatak_details.get("poslodavac_email") if zadatak_details else None
-            ),
-            "poslodavac_naziv": (
-                zadatak_details.get("Poslodavac")[0]["value"]
-                if zadatak_details
-                else None
-            ),
+            "Alocirani_zadatak": zadatak_id[0]["value"]
+            if zadatak_id and len(zadatak_id) > 0
+            else None,
+            "opis_zadatka": zadatak_details.get("opis_zadatka")
+            if zadatak_details
+            else None,
+            "poslodavac_email": zadatak_details.get("poslodavac_email")
+            if zadatak_details
+            else None,
+            "poslodavac_naziv": zadatak_details.get("Poslodavac")[0]["value"]
+            if zadatak_details
+            else None,
             "status_zahtjeva": row.get("status_zahtjeva", ""),
             "popunjena_prijavnica": row.get("popunjena_prijavnica", ""),
             "predan_dnevnik_prakse": row.get("predan_dnevnik_prakse", ""),
             "Dnevnik_prakse": row.get("Dnevnik_prakse", ""),
             "Prijavnica": row.get("Prijavnica", ""),
-            "process_instance_id": row.get("process_instance_id", ""),
+            "process_instance_id": row.get("process_instance_id", "")
         }
 
     if id_alokacija is not None:
@@ -900,10 +816,10 @@ async def fetch_public_alokacije(request):
 @routes.get("/api/poslodavac/zadatak")
 async def fetch_poslodavac_from_zadatak(request):
     logger.info("Received request to fetch poslodavac from zadatak")
-
-    # Extract the id_zadatak value from query parameters
+    
+      # Extract the id_zadatak value from query parameters
     id_zadatak = request.query.get("id_zadatak", None)
-
+    
     if not id_zadatak:
         logger.error("Missing id_zadatak in request")
         return aiohttp.web.Response(
@@ -928,7 +844,9 @@ async def fetch_poslodavac_from_zadatak(request):
         zadatak_data = client.get_row(table_id, row_id)
 
         if "error" in zadatak_data:
-            logger.error("Error fetching zadatak data: %s", zadatak_data["error"])
+            logger.error(
+                "Error fetching zadatak data: %s", zadatak_data["error"]
+            )
             return aiohttp.web.Response(
                 text=json.dumps(zadatak_data),
                 status=zadatak_data["status_code"],
@@ -941,16 +859,9 @@ async def fetch_poslodavac_from_zadatak(request):
             id_zadatak,
         )
         return aiohttp.web.Response(
-            text=json.dumps(
-                {
-                    "poslodavac_naziv": poslodavac,
-                    "opis_zadatka": zadatak_data["data"]["opis_zadatka"],
-                    "poslodavac_email": zadatak_data["data"]["poslodavac_email"],
-                }
-            ),
+            text=json.dumps({"poslodavac_naziv": poslodavac, "opis_zadatka" : zadatak_data["data"]["opis_zadatka"], "poslodavac_email": zadatak_data["data"]["poslodavac_email"]}),
             content_type="application/json",
         )
-
 
 @routes.post("/api/prijavnica")
 async def fill_application_form(request):
@@ -1193,33 +1104,40 @@ async def fetch_table_rows(request):
 async def direct_upload_to_baserow(request):
     logger.info("Received request to upload file directly to Baserow")
 
+    reader = await request.multipart()
+
+    field = await reader.next()
+
+    assert field.name == "file"
+    file_content = await field.read(decode=True)
+    file_name = field.filename
+
+    temp_dir = tempfile.gettempdir()
+    temp_filepath = os.path.join(temp_dir, file_name)
+
+    with open(temp_filepath, "wb") as tmpfile:
+        tmpfile.write(file_content)
+
     try:
-        filename, file_bytes = await _extract_file_from_request(request)
-    except aiohttp.web.HTTPException as exc:
-        logger.error("Invalid direct upload request: %s", exc)
-        raise
-    except Exception as exc:
-        logger.error("Failed to read uploaded file: %s", exc)
-        return aiohttp.web.json_response(
-            {
-                "error": "Failed to read uploaded file.",
-                "details": str(exc),
-            },
-            status=400,
-        )
+        upload_result = client.upload_file(temp_filepath)
 
-    response_payload, status = await _upload_bytes_to_baserow(filename, file_bytes)
+        os.remove(temp_filepath)
 
-    if status >= 400:
-        logger.error(
-            "Error uploading file '%s' to Baserow: %s",
-            filename,
-            response_payload.get("error"),
-        )
-    else:
-        logger.info("Successfully uploaded file: %s", filename)
+        if "error" in upload_result:
+            logger.error("Error uploading file: %s", upload_result["error"])
+            return aiohttp.web.Response(
+                text=str(upload_result["error"]),
+                status=upload_result.get("status_code", 500),
+            )
+        else:
+            logger.info("Successfully uploaded file: %s", file_name)
+            return aiohttp.web.Response(text=json.dumps(upload_result), status=200)
 
-    return aiohttp.web.json_response(response_payload, status=status)
+    except Exception as e:
+        if os.path.exists(temp_filepath):
+            os.remove(temp_filepath)
+        logger.error("An error occurred while uploading file: %s", str(e))
+        return aiohttp.web.Response(text=f"An error occurred: {str(e)}", status=500)
 
 
 # Store files on Baserow server
@@ -1229,73 +1147,55 @@ async def upload_to_baserow(request):
 
     if "Content-Type" not in request.headers:
         logger.error("Content-Type header not present.")
-        return aiohttp.web.json_response(
-            {"error": "Content-Type header not present."}, status=400
-        )
+        return {"error": "Content-Type header not present."}, 400
+    
+    logger.info(f"++++++++Content-Type: {request.headers.get('Content-Type')}")
 
-    logger.info("Content-Type: %s", request.headers.get("Content-Type"))
+    reader = await request.multipart()
+    
+    field = await reader.next()
+    
+    assert field.name == "file"
 
-    try:
-        filename, file_bytes = await _extract_file_from_request(request)
-    except aiohttp.web.HTTPException as exc:
-        logger.error("Invalid upload request: %s", exc)
-        raise
-    except Exception as exc:
-        logger.error("Failed to read uploaded file: %s", exc)
-        return aiohttp.web.json_response(
-            {
-                "error": "Failed to read uploaded file.",
-                "details": str(exc),
-            },
-            status=400,
-        )
+    # Generate a unique filename using UUID
+    filename = f"{uuid.uuid4()}_{field.filename}"
+    file_content = await field.read(decode=True)
 
-    response_payload, status = await _upload_bytes_to_baserow(filename, file_bytes)
+    with open(filename, "wb") as f:
+        f.write(file_content)
 
-    if status >= 400:
-        logger.error(
-            "Error uploading file '%s' to Baserow: %s",
-            filename,
-            response_payload.get("error"),
-        )
+    loop = asyncio.get_event_loop()
+    client = BaserowClient()
+    response = await loop.run_in_executor(None, client.upload_file, filename)
+    os.remove(filename)
+
+    if "error" in response:
+        logger.error("Error uploading file: %s", response["error"])
     else:
         logger.info("Successfully uploaded file: %s", filename)
 
-    return aiohttp.web.json_response(response_payload, status=status)
+    # Return the response data and status
+    return response, 200
 
+
+import asyncio
 
 async def store_file_in_baserow(
     request, table_id, field_name, field_value, table_mappings, file_field_name
 ):
     logger.info("Received request to store file in Baserow")
 
-    try:
-        filename, file_bytes = await _extract_file_from_request(request)
-    except aiohttp.web.HTTPException as exc:
-        logger.error("Invalid upload request: %s", exc)
-        raise
-    except Exception as exc:
-        logger.error("Failed to read uploaded file: %s", exc)
-        return (
-            {
-                "error": "Failed to read uploaded file.",
-                "details": str(exc),
-            },
-            400,
-        )
-
+    # Retry logic
     retries = 3
-    last_failure = None
-
     for attempt in range(1, retries + 1):
-        logger.info("Attempt %s to store file in Baserow", attempt)
+        logger.info(f"Attempt {attempt} to store file in Baserow")
 
-        response_payload, status = await _upload_bytes_to_baserow(filename, file_bytes)
+        response, status = await upload_to_baserow(request)
 
-        if status < 400 and "data" in response_payload:
-            logger.info("File uploaded successfully on attempt %s", attempt)
+        if status == 200:
+            logger.info("File uploaded successfully")
 
-            file_data = response_payload["data"]
+            file_data = response["data"]
             baserow_data = {
                 file_field_name: [
                     {
@@ -1312,6 +1212,7 @@ async def store_file_in_baserow(
                 ]
             }
 
+            client = BaserowClient()
             row_id = client.get_row_id_by_attribute(
                 table_id, field_name, field_value, table_mappings
             )
@@ -1323,47 +1224,22 @@ async def store_file_in_baserow(
                     field_name,
                     field_value,
                 )
-                return ({"error": "Row not found."}, 404)
+                return aiohttp.web.json_response({"error": "Row not found."}, status=404)
 
-            update_result = client.update_row(table_id, row_id, baserow_data)
-            update_status = update_result.get(
-                "status_code", 200 if "error" not in update_result else 500
-            )
-
-            if update_status >= 400:
-                logger.error(
-                    "Error updating row in Baserow for %s: %s",
-                    file_field_name,
-                    update_result.get("error"),
-                )
+            result = client.update_row(table_id, row_id, baserow_data)
+            if "error" in result:
+                logger.error("Error updating row in Baserow: %s", result["error"])
             else:
                 logger.info("Successfully stored file in Baserow")
 
-            return update_result, update_status
-
-        last_failure = (response_payload, status)
-        logger.error(
-            "Error uploading file to Baserow on attempt %s/%s: %s",
-            attempt,
-            retries,
-            response_payload,
-        )
-
+            return aiohttp.web.json_response(result)
+        
+        logger.error(f"Error uploading file to Baserow on attempt {attempt}: {response}")
+        
         if attempt < retries:
             await asyncio.sleep(2)
 
-    saved_path = _save_failed_upload(filename, file_bytes)
-    failure_payload = {
-        "error": "Failed to upload file after multiple attempts.",
-    }
-
-    if last_failure:
-        failure_payload["last_response"] = last_failure[0]
-
-    if saved_path:
-        failure_payload["saved_to"] = saved_path
-
-    return failure_payload, 500
+    return aiohttp.web.json_response({"error": "Failed to upload file after multiple attempts."}, status=500)
 
 
 @routes.post("/api/upload/poslodavac-logo/{naziv}")
@@ -1377,7 +1253,7 @@ async def store_poslodavac_logo(request):
             {"error": "Missing employer name."}, status=400
         )
 
-    payload, status = await store_file_in_baserow(
+    response = await store_file_in_baserow(
         request,
         TABLES_MAP["Poslodavac"],
         "naziv",
@@ -1386,14 +1262,10 @@ async def store_poslodavac_logo(request):
         "logo",
     )
 
-    if status >= 400:
-        logger.error(
-            "Error storing employer logo for '%s': %s",
-            naziv,
-            payload.get("error"),
-        )
+    if "error" in response:
+        logger.error("Error storing employer logo: %s", response["error"])
 
-    return aiohttp.web.json_response(payload, status=status)
+    return response
 
 
 @routes.post("/api/upload/pdf-dnevnik/{id_dnevnik_prakse}")
@@ -1407,7 +1279,7 @@ async def store_pdf_dnevnik_prakse(request):
             {"error": "Missing internship diary ID."}, status=400
         )
 
-    payload, status = await store_file_in_baserow(
+    response = await store_file_in_baserow(
         request,
         TABLES_MAP["Dnevnik_prakse"],
         "id_dnevnik_prakse",
@@ -1416,14 +1288,10 @@ async def store_pdf_dnevnik_prakse(request):
         "dnevnik_prakse_upload",
     )
 
-    if status >= 400:
-        logger.error(
-            "Error storing PDF internship diary '%s': %s",
-            id_dnevnik_prakse,
-            payload.get("error"),
-        )
+    if "error" in response:
+        logger.error("Error storing PDF internship diary: %s", response["error"])
 
-    return aiohttp.web.json_response(payload, status=status)
+    return response
 
 
 @routes.post("/api/upload/pdf-ispunjena-potvrda/{id_dnevnik_prakse}")
@@ -1437,7 +1305,7 @@ async def store_pdf_ispunjena_potvrda(request):
             {"error": "Missing internship diary ID."}, status=400
         )
 
-    payload, status = await store_file_in_baserow(
+    response = await store_file_in_baserow(
         request,
         TABLES_MAP["Dnevnik_prakse"],
         "id_dnevnik_prakse",
@@ -1446,14 +1314,10 @@ async def store_pdf_ispunjena_potvrda(request):
         "ispunjena_potvrda_upload",
     )
 
-    if status >= 400:
-        logger.error(
-            "Error storing PDF filled confirmation '%s': %s",
-            id_dnevnik_prakse,
-            payload.get("error"),
-        )
+    if "error" in response:
+        logger.error("Error storing PDF filled confirmation: %s", response["error"])
 
-    return aiohttp.web.json_response(payload, status=status)
+    return response
 
 
 @routes.delete("/api/complete-deletion")
@@ -1461,13 +1325,13 @@ async def complete_deletion(request):
     logger.info("Received request to delete data")
     data = await request.json()
     logger.info("Received data: %s", data)
-
+    
     process_instance_id = data.get("process_instance_id")
     id_preferencije = data.get("id_preferencije")
     id_alokacija = data.get("id_alokacija")
     id_dnevnik_prakse = data.get("id_dnevnik_prakse")
     id_prijavnica = data.get("id_prijavnica")
-
+    
     if not process_instance_id:
         logger.error("Missing process_instance_id in request data")
         return aiohttp.web.Response(
@@ -1475,59 +1339,44 @@ async def complete_deletion(request):
             status=400,
             content_type="application/json",
         )
-
+    
     try:
         results = []
-
+        
         # Always attempt to delete Student if process_instance_id is provided
         res_Student_del = client.delete_row_by_attribute(
-            TABLES_MAP["Student"],
-            "process_instance_id",
-            process_instance_id,
-            br.Student_Mappings,
+            TABLES_MAP["Student"], "process_instance_id", process_instance_id, br.Student_Mappings
         )
         results.append(res_Student_del)
-
+        
         # Conditionally delete other records if corresponding IDs are provided
         if id_preferencije:
             res_Student_preferencije_del = client.delete_row_by_attribute(
-                TABLES_MAP["Student_preferencije"],
-                "id_preferencije",
-                id_preferencije,
-                br.Student_preferencije_Mappings,
+                TABLES_MAP["Student_preferencije"], "id_preferencije", id_preferencije, br.Student_preferencije_Mappings
             )
             results.append(res_Student_preferencije_del)
-
+        
         if id_alokacija:
             res_Alokacija_del = client.delete_row_by_attribute(
-                TABLES_MAP["Alokacija"],
-                "id_alokacija",
-                id_alokacija,
-                br.Alokacija_Mappings,
+                TABLES_MAP["Alokacija"], "id_alokacija", id_alokacija, br.Alokacija_Mappings
             )
             results.append(res_Alokacija_del)
-
+        
         if id_dnevnik_prakse:
             res_Dnevnik_prakse_del = client.delete_row_by_attribute(
-                TABLES_MAP["Dnevnik_prakse"],
-                "id_dnevnik_prakse",
-                id_dnevnik_prakse,
-                br.Dnevnik_prakse_Mappings,
+                TABLES_MAP["Dnevnik_prakse"], "id_dnevnik_prakse", id_dnevnik_prakse, br.Dnevnik_prakse_Mappings
             )
             results.append(res_Dnevnik_prakse_del)
-
+        
         if id_prijavnica:
             res_Prijavnica_del = client.delete_row_by_attribute(
-                TABLES_MAP["Prijavnica"],
-                "id_prijavnica",
-                id_prijavnica,
-                br.Prijavnica_Mappings,
+                TABLES_MAP["Prijavnica"], "id_prijavnica", id_prijavnica, br.Prijavnica_Mappings
             )
             results.append(res_Prijavnica_del)
-
+        
         # Check for errors only if Student, Student_preferencije, or Alokacija deletions fail
         errors = [res for res in results if "error" in res]
-
+        
         if errors:
             logger.error("Error deleting data: %s", errors)
             return aiohttp.web.Response(
@@ -1535,19 +1384,13 @@ async def complete_deletion(request):
                 status=500,
                 content_type="application/json",
             )
-
-        logger.info(
-            "Successfully deleted relevant data for instance: %s", process_instance_id
-        )
+        
+        logger.info("Successfully deleted relevant data for instance: %s", process_instance_id)
         return aiohttp.web.Response(
-            text=json.dumps(
-                {
-                    "message": f"Successfully deleted relevant data for instance {process_instance_id}"
-                }
-            ),
+            text=json.dumps({"message": f"Successfully deleted relevant data for instance {process_instance_id}"}),
             content_type="application/json",
         )
-
+    
     except Exception as e:
         logger.error("An error occurred: %s", str(e))
         return aiohttp.web.Response(
@@ -1555,7 +1398,6 @@ async def complete_deletion(request):
             status=500,
             content_type="application/json",
         )
-
 
 @routes.get("/status")
 async def status_check(request):
