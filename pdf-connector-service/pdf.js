@@ -29,7 +29,12 @@ function generateHash(oib, mobile) {
 }
 
 async function generatePDFContent(page, jsonData) {
-  const htmlTemplate = await fs.readFile("index.html", "utf8");
+  // Use long template if task description exceeds 700 characters
+  const taskDescription = jsonData.detaljan_opis_zadatka || "";
+  const templateFile =
+    taskDescription.length > 700 ? "index-long.html" : "index.html";
+
+  const htmlTemplate = await fs.readFile(templateFile, "utf8");
   const htmlContent = replacePlaceholders(htmlTemplate, jsonData);
   await page.setContent(htmlContent);
 }

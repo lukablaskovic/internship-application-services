@@ -26,10 +26,10 @@ Bugsnag.start({
 
 // Middleware Setup
 app.use(cors());
-app.use(bodyParser.json({ limit: "5mb" }));
+app.use(bodyParser.json({ limit: "10mb" }));
 app.use(
   bodyParser.urlencoded({
-    limit: "5mb",
+    limit: "10mb",
     extended: true,
     parameterLimit: 5000,
   })

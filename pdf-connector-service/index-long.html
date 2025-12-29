@@ -19,11 +19,28 @@
         overflow-wrap: break-word;
         max-width: 100%;
       }
+      .page {
+        height: 842pt;
+        width: 595pt;
+        page-break-after: always;
+      }
+      .page:last-child {
+        page-break-after: auto;
+      }
+      @media print {
+        .page {
+          page-break-after: always;
+        }
+        .page:last-child {
+          page-break-after: auto;
+        }
+      }
     </style>
   </head>
   <body>
     <div id="app">
-      <div style="height: 842pt; width: 595pt">
+      <!-- PAGE 1 -->
+      <div class="page">
         <div
           id="printMe"
           class="w-[595pt] h-[842pt]"
@@ -33,11 +50,11 @@
             transform: scale(1);
             transform-origin: left top;
           ">
-          <!----><!---->
           <div
             class="bg-white h-full w-full relative text-black rounded"
             style="padding: 0.75in">
             <div class="w-full h-full leading-5 flex flex-col py-1">
+              <!-- Logo -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
                 id="parent_element_h8p35QmwK7ZTym0k4l9oMH8xKqaejyzw"
@@ -50,20 +67,18 @@
                     class="my-[3px] relative"
                     data-draggable="true"
                     style="width: 500px; left: auto; top: auto">
-                    <!---->
                     <div class="relative">
                       <div class="relative mb-2">
                         <img
                           class="hover:outline-dotted outline-1"
                           src="https://fipu.unipu.hr/_pub/themes_static/unipu2020/fipu/icons/fipu_hr.png"
-                          alt="" /><!----><!---->
+                          alt="" />
                       </div>
-                      <!---->
                     </div>
-                    <!---->
                   </div>
                 </div>
               </div>
+              <!-- Spacer -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
                 id="parent_element_vtnyal3GZ9r7C4a82z2h46ppJqLge2pa"
@@ -84,16 +99,13 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                 </div>
               </div>
+              <!-- Title -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
                 id="parent_element_BIgo214rmAaM50VsRNak24jMv87d50Bn"
@@ -114,16 +126,13 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                 </div>
               </div>
+              <!-- Spacer -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
                 id="parent_element_JaFS6VMUzHPfHnZpEKDpJJTH13MeBEKS"
@@ -144,16 +153,13 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                 </div>
               </div>
+              <!-- Student info -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
                 id="parent_element_HWucomFgTcUMwFluwBlxkaEvWpnVtZrO"
@@ -176,13 +182,9 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                   <div
                     id="element_oxwb50UqAGtgcNNbAAYvCqdsdLzyjm79"
@@ -199,13 +201,9 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                   <div
                     id="element_dvhvllPJQuusuchP3cnXevsPBBVb4Z1d"
@@ -220,13 +218,9 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                   <div
                     id="element_J69abyOyYyB3ZJzqE9hj5A3dal80ZKx7"
@@ -241,16 +235,13 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                 </div>
               </div>
+              <!-- Company -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
                 id="parent_element_zxdI7rVI1Ec7ssDVXPJADJgOTtOj6KMB"
@@ -274,13 +265,9 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                   <div
                     id="element_1IjPvrhlCkCBGA9Rl8wp8QsuUHrB7bGN"
@@ -295,16 +282,13 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                 </div>
               </div>
+              <!-- Mentor -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
                 id="parent_element_q8emKU6Rj12RRNG0LDcQjnkDVCSvAhPx"
@@ -328,13 +312,9 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                   <div
                     id="element_mpWdaBYlFvJHXhspa43bZZTlBXYTmn2G"
@@ -349,16 +329,13 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                 </div>
               </div>
+              <!-- Period -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
                 id="parent_element_gD5p12II0GhR3bkJO6ymIBZTRy2iz1xE"
@@ -381,13 +358,9 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                   <div
                     id="element_dIZISLgC521BcTIc9GMvzwxGYZNZO5WI"
@@ -402,16 +375,13 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                 </div>
               </div>
+              <!-- Hours -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
                 id="parent_element_7bbhN83w3QtmPtOjanSDq397KyVLXzkj"
@@ -434,13 +404,9 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                   <div
                     id="element_Tq9xfSDCQbhsXdrzkVawn9R0vFkhtrNP"
@@ -455,16 +421,13 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                 </div>
               </div>
+              <!-- Task description - grows to fill remaining space -->
               <div
                 class="relative hover:outline-dotted outline-1 handle grow"
                 id="parent_element_cSsCUM2DNyqhogn440KyxUgz660LakLX"
@@ -487,13 +450,9 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                   <div
                     id="element_OgQRCZjWQkEalL8WaIR59y3ULXlyVGae"
@@ -509,49 +468,144 @@
                         </div>
                         <div
                           class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
                         </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 2 -->
+      <div class="page">
+        <div
+          id="printMe2"
+          class="w-[595pt] h-[842pt]"
+          style="
+            height: 842pt;
+            width: 595pt;
+            transform: scale(1);
+            transform-origin: left top;
+          ">
+          <div
+            class="bg-white h-full w-full relative text-black rounded"
+            style="padding: 0.75in">
+            <div class="w-full h-full leading-5 flex flex-col py-1">
+              <!-- Logo (repeated on page 2) -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
-                id="parent_element_caZXZ06XBT04RgMxYWVBIGoBaPeLNf6l"
+                data-draggable="true">
+                <div class="flex w-full justify-center">
+                  <div
+                    class="my-[3px] relative"
+                    data-draggable="true"
+                    style="width: 500px; left: auto; top: auto">
+                    <div class="relative">
+                      <div class="relative mb-2">
+                        <img
+                          class="hover:outline-dotted outline-1"
+                          src="https://fipu.unipu.hr/_pub/themes_static/unipu2020/fipu/icons/fipu_hr.png"
+                          alt="" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Spacer -->
+              <div
+                class="relative hover:outline-dotted outline-1 handle flex-none"
+                data-draggable="true">
+                <div class="flex w-full justify-center">
+                  <div
+                    class="my-[3px] flex-none relative"
+                    data-draggable="true"
+                    style="width: auto; left: auto; top: auto">
+                    <div class="relative">
+                      <div class="relative my-[3px]">
+                        <div
+                          class="outline-none bg-slate-300 bg-opacity-0 border-0 rounded -my-[3px] px-2 pdf-text hover:bg-opacity-25 w-full">
+                          <h2><br /></h2>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Title (repeated on page 2) -->
+              <div
+                class="relative hover:outline-dotted outline-1 handle flex-none"
+                data-draggable="true">
+                <div class="flex w-full justify-center">
+                  <div
+                    class="my-[3px] flex-none relative"
+                    data-draggable="true"
+                    style="width: auto; left: auto; top: auto">
+                    <div class="relative">
+                      <div class="relative my-[3px]">
+                        <div
+                          class="outline-none bg-slate-300 bg-opacity-0 border-0 rounded -my-[3px] px-2 pdf-text hover:bg-opacity-25 w-full">
+                          <h2>Potvrda o obavljenoj praksi</h2>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Spacer -->
+              <div
+                class="relative hover:outline-dotted outline-1 handle flex-none"
+                data-draggable="true">
+                <div class="flex w-full justify-center">
+                  <div
+                    class="my-[3px] flex-none relative"
+                    data-draggable="true"
+                    style="width: auto; left: auto; top: auto">
+                    <div class="relative">
+                      <div class="relative my-[3px]">
+                        <div
+                          class="outline-none bg-slate-300 bg-opacity-0 border-0 rounded -my-[3px] px-2 pdf-text hover:bg-opacity-25 w-full">
+                          <h2><br /></h2>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Divider -->
+              <div
+                class="relative hover:outline-dotted outline-1 handle flex-none"
+                id="parent_element_caZXZ06XBT04RgMxYWVBIGoBaPeLNf6l_p2"
                 data-draggable="true">
                 <div
                   class="flex w-full justify-start"
-                  id="element_caZXZ06XBT04RgMxYWVBIGoBaPeLNf6l">
+                  id="element_caZXZ06XBT04RgMxYWVBIGoBaPeLNf6l_p2">
                   <div
-                    id="element_lYOMOZr7GQk9cakDamy7QXtq5XJbZ6Ko"
+                    id="element_lYOMOZr7GQk9cakDamy7QXtq5XJbZ6Ko_p2"
                     class="my-[3px] relative"
                     data-draggable="true"
                     style="width: 100%; left: auto; top: auto">
-                    <!----><!---->
                     <div class="relative">
                       <div class="relative py-1 hover:bg-slate-100">
                         <div
                           class="border border-gray-300 border-dashed rounded-full"></div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
                   </div>
                 </div>
               </div>
+              <!-- Mentor fills note -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
-                id="parent_element_BB31OERKhjNutNZkVXMvAV6t5JfxBEoy"
+                id="parent_element_BB31OERKhjNutNZkVXMvAV6t5JfxBEoy_p2"
                 data-draggable="true">
                 <div
                   class="flex w-full justify-start"
-                  id="element_BB31OERKhjNutNZkVXMvAV6t5JfxBEoy">
+                  id="element_BB31OERKhjNutNZkVXMvAV6t5JfxBEoy_p2">
                   <div
-                    id="element_CmuTiuLwFBsthh33OaFIkZZvfaiOhRbO"
+                    id="element_CmuTiuLwFBsthh33OaFIkZZvfaiOhRbO_p2"
                     class="my-[3px] flex-none relative"
                     data-draggable="true"
                     style="width: auto; left: auto; top: auto">
@@ -565,27 +619,21 @@
                             >
                           </h6>
                         </div>
-                        <div
-                          class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
-                        </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                 </div>
               </div>
+              <!-- Mentor name if different -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
-                id="parent_element_LR0Iy3SUjUWRinsqcCttesqNpzFgXfnf"
+                id="parent_element_LR0Iy3SUjUWRinsqcCttesqNpzFgXfnf_p2"
                 data-draggable="true">
                 <div
                   class="flex w-full justify-start"
-                  id="element_LR0Iy3SUjUWRinsqcCttesqNpzFgXfnf">
+                  id="element_LR0Iy3SUjUWRinsqcCttesqNpzFgXfnf_p2">
                   <div
-                    id="element_OCE08iCBecwud28d2XJ54rf6Pw7HuqlY"
+                    id="element_OCE08iCBecwud28d2XJ54rf6Pw7HuqlY_p2"
                     class="my-[3px] grow relative"
                     data-draggable="true"
                     style="width: auto; left: auto; top: auto">
@@ -600,50 +648,42 @@
                           </h5>
                           <p>&nbsp;</p>
                         </div>
-                        <div
-                          class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
-                        </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                 </div>
               </div>
+              <!-- Divider -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
-                id="parent_element_40mKChSGBVNHmf3hjJ8caeA0IsEK6AUl"
+                id="parent_element_40mKChSGBVNHmf3hjJ8caeA0IsEK6AUl_p2"
                 data-draggable="true">
                 <div
                   class="flex w-full justify-start"
-                  id="element_40mKChSGBVNHmf3hjJ8caeA0IsEK6AUl">
+                  id="element_40mKChSGBVNHmf3hjJ8caeA0IsEK6AUl_p2">
                   <div
-                    id="element_8Az9wreUMjPh21OXsDvsyFXEZfon30BC"
+                    id="element_8Az9wreUMjPh21OXsDvsyFXEZfon30BC_p2"
                     class="my-[3px] relative"
                     data-draggable="true"
                     style="width: 100%; left: auto; top: auto">
-                    <!----><!---->
                     <div class="relative">
                       <div class="relative py-1 hover:bg-slate-100">
                         <div class="border border-black rounded-full"></div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
                   </div>
                 </div>
               </div>
+              <!-- Grade proposal -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
-                id="parent_element_XngdM1QqPyrYyaOG6yMjm8L3tlSSEWSi"
+                id="parent_element_XngdM1QqPyrYyaOG6yMjm8L3tlSSEWSi_p2"
                 data-draggable="true">
                 <div
                   class="flex w-full justify-start"
-                  id="element_XngdM1QqPyrYyaOG6yMjm8L3tlSSEWSi">
+                  id="element_XngdM1QqPyrYyaOG6yMjm8L3tlSSEWSi_p2">
                   <div
-                    id="element_YS4esM5AWUTnfxS7jPb3JPgJQS9y7cpm"
+                    id="element_YS4esM5AWUTnfxS7jPb3JPgJQS9y7cpm_p2"
                     class="my-[3px] flex-none relative"
                     data-draggable="true"
                     style="width: auto; left: auto; top: auto">
@@ -655,50 +695,44 @@
                           <h5>Prijedlog ocjene mentor(a/ice):</h5>
                           <p><br /></p>
                         </div>
-                        <div
-                          class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
-                        </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                 </div>
               </div>
+              <!-- Divider -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
-                id="parent_element_vGObQReSDOaM4yUxDmgWWWJFnq3LQnJn"
+                id="parent_element_vGObQReSDOaM4yUxDmgWWWJFnq3LQnJn_p2"
                 data-draggable="true">
                 <div
                   class="flex w-full justify-start"
-                  id="element_vGObQReSDOaM4yUxDmgWWWJFnq3LQnJn">
+                  id="element_vGObQReSDOaM4yUxDmgWWWJFnq3LQnJn_p2">
                   <div
-                    id="element_M4ios7MoewnAYmB5qowZoPZ03tyVbdGH"
+                    id="element_M4ios7MoewnAYmB5qowZoPZ03tyVbdGH_p2"
                     class="my-[3px] relative"
                     data-draggable="true"
                     style="width: 100%; left: auto; top: auto">
-                    <!----><!---->
                     <div class="relative">
                       <div class="relative py-1 hover:bg-slate-100">
                         <div class="border border-black rounded-full"></div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
                   </div>
                 </div>
               </div>
+              <!-- Grow spacer to push content down -->
+              <div class="grow"></div>
+              <!-- Confirmation text -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
-                id="parent_element_RBSECup63JKwHMuzDSX4cUXr694gI6A6"
+                id="parent_element_RBSECup63JKwHMuzDSX4cUXr694gI6A6_p2"
                 data-draggable="true">
                 <div
                   class="flex w-full justify-start"
-                  id="element_RBSECup63JKwHMuzDSX4cUXr694gI6A6">
+                  id="element_RBSECup63JKwHMuzDSX4cUXr694gI6A6_p2">
                   <div
-                    id="element_KVZILeB0Ql7IaBdMn8SO0pFhBIXM7uPG"
+                    id="element_KVZILeB0Ql7IaBdMn8SO0pFhBIXM7uPG_p2"
                     class="my-[3px] flex-1 relative"
                     data-draggable="true"
                     style="width: auto; left: auto; top: auto">
@@ -713,27 +747,21 @@
                           </h5>
                           <p><br /></p>
                         </div>
-                        <div
-                          class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
-                        </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                 </div>
               </div>
+              <!-- Date and signature labels -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
-                id="parent_element_RTfuEhxPLDsjzh87r3woKqIIPa6rSspl"
+                id="parent_element_RTfuEhxPLDsjzh87r3woKqIIPa6rSspl_p2"
                 data-draggable="true">
                 <div
                   class="flex w-full justify-between"
-                  id="element_RTfuEhxPLDsjzh87r3woKqIIPa6rSspl">
+                  id="element_RTfuEhxPLDsjzh87r3woKqIIPa6rSspl_p2">
                   <div
-                    id="element_eYUZ2rC83TyuE54veM2vt12fxeMmJeJ2"
+                    id="element_eYUZ2rC83TyuE54veM2vt12fxeMmJeJ2_p2"
                     class="my-[3px] flex-none relative"
                     data-draggable="true"
                     style="width: auto; left: auto; top: auto">
@@ -746,18 +774,11 @@
                           <h5><br /></h5>
                           <h5><br /></h5>
                         </div>
-                        <div
-                          class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
-                        </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                   <div
-                    id="element_DgAPX0oclHasQt2LyufgTdr12ZjhhVaK"
+                    id="element_DgAPX0oclHasQt2LyufgTdr12ZjhhVaK_p2"
                     class="my-[3px] flex-none relative"
                     data-draggable="true"
                     style="width: auto; left: auto; top: auto">
@@ -770,51 +791,39 @@
                           <h5><br /></h5>
                           <h5><br /></h5>
                         </div>
-                        <div
-                          class="absolute top-1 left-0 w-full h-0 p-0 m-0 bg-opacity-0">
-                          <!---->
-                        </div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
-                    <!----><!---->
                   </div>
                 </div>
               </div>
+              <!-- Date and signature lines -->
               <div
                 class="relative hover:outline-dotted outline-1 handle flex-none"
-                id="parent_element_rRcaOgNrVchJEobNEPzr6PDq4R4xtVn4"
+                id="parent_element_rRcaOgNrVchJEobNEPzr6PDq4R4xtVn4_p2"
                 data-draggable="true">
                 <div
                   class="flex w-full justify-between"
-                  id="element_rRcaOgNrVchJEobNEPzr6PDq4R4xtVn4">
+                  id="element_rRcaOgNrVchJEobNEPzr6PDq4R4xtVn4_p2">
                   <div
-                    id="element_vf68Z4nPTUqBaVDWkohfnrLC4pBVZPB2"
+                    id="element_vf68Z4nPTUqBaVDWkohfnrLC4pBVZPB2_p2"
                     class="my-[3px] relative"
                     data-draggable="true"
                     style="width: 200px; left: auto; top: auto">
-                    <!----><!---->
                     <div class="relative">
                       <div class="relative py-1 hover:bg-slate-100">
                         <div class="border border-black rounded-full"></div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
                   </div>
                   <div
-                    id="element_a4W8RYKHho6nu2ij24Sc7jnGpj5iPENo"
+                    id="element_a4W8RYKHho6nu2ij24Sc7jnGpj5iPENo_p2"
                     class="my-[3px] relative"
                     data-draggable="true"
                     style="width: 200px; left: auto; top: auto">
-                    <!----><!---->
                     <div class="relative">
                       <div class="relative py-1 hover:bg-slate-100">
                         <div class="border border-black rounded-full"></div>
-                        <!----><!---->
                       </div>
-                      <!---->
                     </div>
                   </div>
                 </div>
@@ -826,3 +835,4 @@
     </div>
   </body>
 </html>
+
